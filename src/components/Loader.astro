@@ -1,0 +1,212 @@
+---
+import site from "../data/site.json";
+
+// "Panel boot" loading screen: a 3x3 grid of panel tiles lights up in a ring around the logo
+// while the page loads, then the screen wipes upward. Black and white, like the rest of the site.
+// Settings live in src/data/site.json under "loader":
+//   enabled        false removes the loading screen entirely
+//   oncePerSession true shows it on the first page of a visit only (add ?loader to any URL to force it)
+const cfg = site.loader ?? { enabled: true, oncePerSession: true };
+
+// Tile order around the ring (row by row; the middle tile is the logo).
+const ring = [0, 1, 2, 7, -1, 3, 6, 5, 4];
+---
+
+{
+  cfg.enabled && (
+    <>
+      {/* Decides before first paint whether the screen shows. Without JS it never shows. */}
+      <script is:inline define:vars={{ once: cfg.oncePerSession }}>
+        (function () {
+          var root = document.documentElement;
+          try {
+            var forced = /[?&]loader(=|&|$)/.test(location.search);
+            if (!forced && once && sessionStorage.getItem("mp-loader-seen")) return;
+            sessionStorage.setItem("mp-loader-seen", "1");
+          } catch (e) {}
+          root.classList.add("mp-loading");
+        })();
+      </script>
+
+    </>
+  )
+}
+
+<style is:inline>
+  #mp-loader { display: none; }
+  html.mp-loading { overflow: hidden; }
+  html.mp-loading #mp-loader {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--color-bg, #000);
+    color: var(--color-text-1, #e0e0e0);
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 0.65s cubic-bezier(0.77, 0, 0.18, 1) 0.2s;
+  }
+  html.mp-loaded #mp-loader { clip-path: inset(0 0 100% 0); }
+  .mp-l-stage {
+    width: min(220px, 70vw);
+    display: grid;
+    justify-items: center;
+    gap: 22px;
+    transition: opacity 0.25s ease, transform 0.35s ease;
+  }
+  html.mp-loaded .mp-l-stage { opacity: 0; transform: translateY(-10px); }
+  .mp-l-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 28px);
+    gap: 6px;
+  }
+  .mp-l-grid > i {
+    display: block;
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.04);
+    animation: mp-tile 1.8s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 110ms);
+  }
+  .mp-l-grid > .mp-l-core {
+    display: grid;
+    place-items: center;
+    border-color: rgba(255, 255, 255, 0.55);
+    background: transparent;
+    animation: mp-core 1.8s ease-in-out infinite;
+  }
+  .mp-l-core img { width: 18px; height: auto; display: block; }
+  .mp-l-line {
+    width: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    font: 12px/1 var(--font-mono, ui-monospace, monospace);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-2, #c8c8c8);
+  }
+  .mp-l-label::after { content: "_"; animation: mp-blink 1s steps(1) infinite; }
+  .mp-l-bar {
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.14);
+    overflow: hidden;
+  }
+  .mp-l-bar > span {
+    display: block;
+    height: 100%;
+    background: #fff;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .mp-l-ver {
+    margin: 0;
+    font: 11px/1 var(--font-mono, ui-monospace, monospace);
+    letter-spacing: 0.08em;
+    color: var(--color-text-4, #707070);
+  }
+  @keyframes mp-tile {
+    0%, 55%, 100% {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: scale(1);
+    }
+    20% {
+      background: #fff;
+      border-color: #fff;
+      transform: scale(1.1);
+    }
+  }
+  @keyframes mp-core {
+    0%, 100% { border-color: rgba(255, 255, 255, 0.35); }
+    50% { border-color: #fff; }
+  }
+  @keyframes mp-blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .mp-l-grid > i, .mp-l-grid > .mp-l-core, .mp-l-label::after { animation: none; }
+    html.mp-loading #mp-loader { transition: none; }
+    .mp-l-stage { transition: none; }
+  }
+</style>
+
+
+{
+  cfg.enabled && (
+    <>
+      <div id="mp-loader" role="status" aria-live="polite" aria-label={`Loading ${site.title}`}>
+        <div class="mp-l-stage">
+          <div class="mp-l-grid" aria-hidden="true">
+            {ring.map((n) =>
+              n < 0 ? (
+                <i class="mp-l-core"><img src="/assets/logo.svg" alt="" width="18" height="13" /></i>
+              ) : (
+                <i style={`--i:${n}`}></i>
+              ),
+            )}
+          </div>
+          <p class="mp-l-line">
+            <span class="mp-l-label" id="mp-l-label">starting panel</span>
+            <span id="mp-l-pct">0%</span>
+          </p>
+          <div class="mp-l-bar" aria-hidden="true"><span id="mp-l-fill"></span></div>
+          <p class="mp-l-ver">{site.version.label}</p>
+        </div>
+      </div>
+
+
+      <script is:inline>
+        (function () {
+          var root = document.documentElement;
+          var el = document.getElementById("mp-loader");
+          if (!el || !root.classList.contains("mp-loading")) return;
+
+          var fill = document.getElementById("mp-l-fill");
+          var pctEl = document.getElementById("mp-l-pct");
+          var label = document.getElementById("mp-l-label");
+          var steps = ["starting panel", "waking daemon", "linking nodes", "syncing state", "ready"];
+          var MIN_MS = 900; // never flash: show at least this long
+          var MAX_MS = 6000; // never hang: give up waiting for slow third-party scripts
+          var t0 = performance.now();
+          var p = 0;
+          var done = false;
+
+          function render() {
+            fill.style.transform = "scaleX(" + p / 100 + ")";
+            pctEl.textContent = Math.round(p) + "%";
+            label.textContent = steps[Math.min(steps.length - 1, Math.floor(p / 25))];
+          }
+          // Creep toward 90% while loading; the last 10% is the real "page loaded" event.
+          function tick() {
+            if (done) return;
+            var t = performance.now() - t0;
+            p = Math.max(p, 90 * (1 - Math.exp(-t / 1400)));
+            render();
+            requestAnimationFrame(tick);
+          }
+          function finish() {
+            if (done) return;
+            done = true;
+            var wait = Math.max(0, MIN_MS - (performance.now() - t0));
+            setTimeout(function () {
+              p = 100;
+              render();
+              root.classList.add("mp-loaded");
+              setTimeout(function () {
+                root.classList.remove("mp-loading", "mp-loaded");
+                el.remove();
+              }, 900);
+            }, wait);
+          }
+
+          requestAnimationFrame(tick);
+          if (document.readyState === "complete") finish();
+          else window.addEventListener("load", finish);
+          setTimeout(finish, MAX_MS);
+        })();
+      </script>
+    </>
+  )
+}

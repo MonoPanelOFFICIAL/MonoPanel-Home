@@ -1,0 +1,25 @@
+---
+title: "Middleware & Protection"
+description: "Authentication, rate limiting and request protection."
+section: "Panel"
+order: 46
+---
+
+## Authentication
+
+`authMiddleware` accepts a session token (cookie or bearer) or an API key (`x-api-key`). Role checks such as `requireAdmin` run after it. In maintenance mode only admin and super admin accounts get through.
+
+## API keys
+
+For API keys, scopes are matched against the endpoint, with wildcard forms such as `users.*` and `users.manage`, and `*`, `admin` or `full` for everything. A key must come from an allowed IP when it has an allow-list, and be inside its expiry.
+
+## Rate limits
+
+| Limiter | Limit |
+|---|---|
+| General API | 240 requests per minute per IP |
+| Sign-in and account endpoints | 30 attempts per 5 minutes |
+| API keys | 60 requests per minute per key |
+| Console | 20 connections per minute per user |
+
+The client IP comes from Express' `trust proxy` setting (`TRUST_PROXY`). The panel never reads `X-Forwarded-For` directly, because that would let clients spoof an address and bypass limits and bans.

@@ -1,0 +1,51 @@
+---
+import "../styles/tokens.css";
+import "../styles/hovers.css";
+import "../styles/animations.css";
+import "../styles/layout.css";
+import "../styles/prose.css";
+import "../styles/components.css";
+import "../styles/sections.css";
+import Head from "../components/Head.astro";
+import Nav from "../components/Nav.astro";
+import Loader from "../components/Loader.astro";
+import site from "../data/site.json";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <Head
+    pageTitle={title}
+    site={site}
+    pageDescription={description}
+  />
+  <body class="docs-page">
+    <Loader />
+    <Nav />
+
+    <div class="docs-shell">
+      <slot />
+    </div>
+
+    <script is:inline src="/js/motion.js" defer></script>
+    <script is:inline src="/js/main.js" defer></script>
+    <script
+      is:inline
+      src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"
+      defer></script>
+  </body>
+</html>
+
+<style>
+  .docs-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+</style>

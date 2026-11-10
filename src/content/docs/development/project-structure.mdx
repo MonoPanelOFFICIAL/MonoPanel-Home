@@ -1,0 +1,47 @@
+---
+title: "Project Structure"
+description: "Where things live in the panel and the daemon."
+section: "Development"
+order: 61
+---
+
+## Panel
+
+```text
+MonoPanel/
+├── server.ts                # Express entry point (API + Vite middleware)
+├── server/
+│   ├── db.ts                # PostgreSQL-backed working set, defaults, migrations
+│   ├── auth.ts              # Auth middleware and role checks
+│   ├── discordService.ts    # Discord bot
+│   ├── webhookService.ts    # Outgoing webhooks
+│   ├── daemonLink.ts        # Node secret sharing
+│   ├── hosting/             # Servers, plans, schedules, transfers, addons, daemon client
+│   ├── vps/                 # VPS service and daemon client
+│   ├── storage/             # PostgreSQL driver and document store
+│   ├── services/            # Request protection, provisioning
+│   └── routes/              # admin, auth, billing, hosting, vps, mail, support, status, ...
+├── src/
+│   ├── App.tsx              # Page routing and layout
+│   ├── index.css            # Theme tokens
+│   ├── components/          # Navbar, Footer, Sidebar, logo
+│   ├── lib/                 # Theme, branding and auth contexts, API helper
+│   └── pages/               # public, auth, customer, admin, vps
+├── public/                  # Logos and favicon
+└── data/                    # Runtime files, never committed
+```
+
+## Daemon
+
+```text
+daemon/
+├── src/
+│   ├── index.ts, app.ts     # Boot and routes
+│   ├── auth.ts, safe.ts     # HMAC verification, path safety
+│   ├── config.ts, db.ts, state.ts   # Config and PostgreSQL state
+│   ├── runtime/             # docker, podman and process runtimes
+│   ├── vps/                 # VPS runtime and routes
+│   ├── fsops.ts, recycle.ts, backup.ts, transfer.ts, addons.ts
+│   └── sftp*.ts             # SFTP server
+└── rom/                     # Dockerfile and rootfs for VPS containers
+```

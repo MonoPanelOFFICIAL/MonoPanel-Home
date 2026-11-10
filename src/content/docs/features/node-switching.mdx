@@ -1,0 +1,23 @@
+---
+title: "Node Switching"
+description: "Move a server and all its files to another node."
+section: "Features"
+order: 18
+---
+
+Node switching is available on plans with the switch node feature.
+
+## What happens
+
+1. The server is stopped.
+2. The source node archives the server and records a SHA-256 checksum.
+3. The server is registered on the target node.
+4. The archive is streamed from source to target, with the checksum carried in the signed URL.
+5. The target verifies it, the panel switches its records, and the source copy is deleted.
+6. The server is started again if it was running.
+
+If anything fails before the switch, the target copy is deleted and the server stays where it was.
+
+## Which nodes qualify
+
+A target must be online, visible to the plan, compatible with the server's software, and have enough free capacity and free ports. A server that is suspended, expired, installing or install failed cannot be moved, and neither can one already moving. The largest server a node accepts is set by `MAX_TRANSFER_MB`, which defaults to 20480.

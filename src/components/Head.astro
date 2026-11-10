@@ -1,0 +1,75 @@
+---
+interface Props {
+  pageTitle?: string;
+  site: {
+    title: string;
+    description: string;
+    siteUrl?: string;
+  };
+  rootPrefix?: string;
+  pageDescription?: string;
+}
+
+const {
+  pageTitle,
+  site,
+  rootPrefix = "/",
+  pageDescription,
+} = Astro.props;
+
+const siteUrl = (site.siteUrl || Astro.site?.origin || "").replace(/\/$/, "");
+const fullTitle = pageTitle ? `${pageTitle} · ${site.title}` : site.title;
+const description = pageDescription || site.description;
+const ogImage = `${siteUrl}/assets/banner.png`;
+const canonical = `${siteUrl}${rootPrefix === "" ? "/" : rootPrefix}`;
+---
+
+<meta charset="UTF-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+/>
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta
+  name="theme-color"
+  content="#000000"
+  media="(prefers-color-scheme: dark)"
+/>
+<meta
+  name="theme-color"
+  content="#f5f5f5"
+  media="(prefers-color-scheme: light)"
+/>
+
+<link rel="icon" href={`${rootPrefix}assets/favicon.ico`} type="image/x-icon" />
+<link
+  rel="icon"
+  href={`${rootPrefix}assets/icon.png`}
+  type="image/png"
+  sizes="any"
+/>
+
+<!-- Open Graph — used by Discord, GitHub, and most link previewers -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={site.title} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImage} />
+{siteUrl && <meta property="og:url" content={canonical} />}
+
+<link rel="apple-touch-icon" href={`${rootPrefix}assets/apple-touch-icon.png`} />
+<meta property="og:image:width" content="1920" />
+<meta property="og:image:height" content="1059" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<!-- Preload fonts -->
+<link
+  rel="preload"
+  as="font"
+  href="/fonts/space-grotesk-variable.woff2"
+  type="font/woff2"
+  crossorigin
+/>
+
+<!-- Mermaid.js — loaded on demand by main.js when ```mermaid blocks are found -->

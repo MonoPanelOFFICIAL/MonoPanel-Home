@@ -1,0 +1,32 @@
+---
+title: "Backups & Transfers"
+description: "Backup, restore and node-to-node transfer routes."
+section: "Daemon"
+order: 85
+---
+
+## Backups
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/v1/servers/:id/backups` | Create a backup, returns id, size and checksum |
+| POST | `/v1/servers/:id/backups/:backupId/restore` | Restore a backup |
+| GET | `/v1/servers/:id/backups/:backupId/download` | Stream the archive |
+| DELETE | `/v1/servers/:id/backups/:backupId` | Delete a backup |
+
+Backups are `.tar.gz` files in `BACKUPS_DIR`, one folder per server. See [Backups](/docs/features/backups/).
+
+## Transfers
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/v1/servers/:id/transfer/prepare` | Archive the server for export |
+| GET | `/v1/servers/:id/transfer/:fileId` | Stream the export |
+| PUT | `/v1/servers/:id/transfer` | Receive a server from another node |
+| DELETE | `/v1/servers/:id/transfer/:fileId` | Delete the export |
+
+The receiving node verifies the checksum from the signed query string and refuses archives larger than `MAX_TRANSFER_MB`. See [Node switching](/docs/features/node-switching/).
+
+## Addons
+
+`POST /v1/servers/:id/addon/install` downloads addon files onto a server, and `POST /v1/servers/:id/addon/remove` removes them. Downloads are guarded against private addresses.

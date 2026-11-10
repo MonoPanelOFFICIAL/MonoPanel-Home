@@ -1,0 +1,55 @@
+name: Build site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build site
+        run: pnpm astro build
+        env:
+          NODE_ENV: production
+          # Public domain, e.g. https://monopanel.example.com (repo variable). Used for /installer.sh and the install command.
+          SITE_URL: ${{ vars.SITE_URL }}
+
+      - name: Verify build output
+        run: |
+          test -d dist || { echo "::error::dist/ was not created"; exit 1; }
+          echo "HTML pages: $(find dist -name '*.html' | wc -l)"
+          test -s dist/installer.sh || { echo "::error::dist/installer.sh was not created"; exit 1; }
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist

@@ -1,0 +1,34 @@
+---
+title: "About MonoPanel"
+description: "What MonoPanel is, what it sells and how the release is named."
+section: "Project"
+order: 1
+---
+
+MonoPanel is a full-stack platform for running a hosting business. One repository gives you a public website, customer accounts, a billing and order system, a support desk, an in-dashboard mail inbox and a complete admin panel. A separate lightweight daemon runs on every node and does the work of hosting customer servers and VPSes.
+
+## Current release
+
+The current release is **Katharos V2.0.1**, a **stable** release.
+
+## What it sells
+
+MonoPanel sells two products, and both are priced from the plans you define in the admin panel:
+
+- **Discord bot hosting.** Customers create always-on servers from the software you offer. Node.js, Python, a static website and Minecraft (Paper) ship by default, and you can add more.
+- **VPS hosting.** Customers get a VPS with root access over SSH. Ubuntu 22.04, Ubuntu 24.04 and Debian 12 are available out of the box.
+
+## The two parts
+
+| Part | Job |
+|---|---|
+| **Panel** | The website, accounts, billing, support and admin panel. Written in TypeScript with React 19, Vite 6, Tailwind 4 and an Express 4 API. |
+| **Daemon** | One agent per node. It runs customer servers (Docker, Podman or a native sandbox) and customer VPSes (Docker). It has no npm runtime dependencies besides the PostgreSQL driver. |
+
+The panel never touches customer machines directly. It only sends signed requests to the daemon on each node, and both parts keep their state in PostgreSQL.
+
+## Where to go next
+
+- [Admin getting started](/docs/admin/getting-started/) to install the panel and add your first node.
+- [Daemon overview](/docs/daemon/overview/) to set up a node.
+- [System architecture](/docs/architecture/) for how the pieces talk to each other.

@@ -1,0 +1,34 @@
+---
+title: "VPS Hosting"
+description: "Sell VPSes with root access over SSH."
+section: "Features"
+order: 19
+---
+
+VPS hosting needs a node whose daemon has Docker. See [VPS on the daemon](/docs/daemon/vps/).
+
+## What customers get
+
+Each VPS is a Docker container with sshd, Docker, Node.js, pm2 and build tools. Customers choose an operating system when ordering:
+
+| OS | Enabled by default |
+|---|:-:|
+| Ubuntu 22.04 LTS | Yes |
+| Ubuntu 24.04 LTS | Yes |
+| Debian 12 | Yes |
+| Ubuntu 20.04 LTS | No |
+| Debian 11 | No |
+
+You can enable or disable each one and choose which a plan offers.
+
+## From the dashboard
+
+Customers can start, stop and restart a VPS, view its logs, run commands, browse and edit files, change the root password and use the `sshx` terminal. A resize changes its limits.
+
+## Plans
+
+A VPS plan sets vCPU count, RAM, disk, bandwidth, price and billing period. The panel ships three starter plans (Nano, Micro and Pro) that you can edit or replace. The panel limits how many VPSes one user may own, `maxVpsPerUser`, which defaults to 5.
+
+## Reserve your SSH ports
+
+Keep the panel's VPS SSH port range (default 42000 to 42999) outside the node's `PORT_MIN` to `PORT_MAX` range used by servers.

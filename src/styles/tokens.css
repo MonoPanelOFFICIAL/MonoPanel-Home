@@ -1,0 +1,90 @@
+/* Made by https://github.com/bthavanish */
+@import "tailwindcss";
+
+/* ── Base ────────────────────────────────────────────────────────────────────── */
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: var(--color-bg);
+  color: var(--color-text-1);
+  font-family: var(--font-sans);
+}
+
+/* ── Local font ─────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: "Space Grotesk Variable";
+  src: url("/fonts/space-grotesk-variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+}
+
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
+@theme {
+  --font-sans:
+    "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui,
+    sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Fira Code", monospace;
+
+  /* Dark (default) — MonoPanel black and white */
+  --color-bg: #000000;
+  --color-bg-2: #0b0b0b;
+  --color-bg-3: #111111;
+  --color-bg-hover: #1c1c1c;
+  --color-bg-input: rgba(255, 255, 255, 0.09);
+  --color-nav-bg: #000000;
+
+  --color-border: rgba(255, 255, 255, 0.13);
+  --color-border-input: rgba(255, 255, 255, 0.16);
+
+  --color-text-1: #e0e0e0;
+  --color-text-2: #c8c8c8;
+  --color-text-3: #a0a0a0;
+  --color-text-4: #707070;
+
+  --color-success: var(--color-text-1);
+  --color-warning: var(--color-text-2);
+  --color-danger: var(--color-text-3);
+  --color-info: var(--color-text-2);
+  --color-info-bg: rgba(255, 255, 255, 0.06);
+
+  /* accent — used by scroll progress bar, focus rings */
+  --color-accent: #fff;
+
+  --color-tag-purple: var(--color-text-2);
+  --color-tag-teal: var(--color-text-2);
+  --color-tag-orange: var(--color-text-2);
+
+  /* Layout */
+  --sidebar-width: 220px;
+}
+
+/* ── Motion tokens + z-index scale ─────────────────────────────────────────── */
+:root {
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-top: 600;
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+  --dur-instant: 80ms;
+  --dur-quick: 150ms;
+  --dur-default: 200ms;
+  --dur-enter: 320ms;
+  --dur-exit: 180ms;
+  --dur-stagger: 40ms;
+
+  /* Inverted hover — white bg, dark text */
+  --hover-bg: var(--color-text-1);
+  --hover-text: var(--color-bg);
+}

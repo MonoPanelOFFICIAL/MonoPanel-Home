@@ -1,0 +1,316 @@
+---
+import siteData from "../data/site.json";
+
+interface SidebarLink {
+  label: string;
+  href: string;
+  active?: boolean;
+  section?: string;
+}
+interface Heading {
+  id: string;
+  text: string;
+  level: number;
+}
+interface Props {
+  rootPrefix?: string;
+  currentPage?: string;
+  sidebarLinks?: SidebarLink[];
+  sidebarSectionLabel?: string;
+  docHeadings?: Heading[];
+  site?: { title: string; description: string; siteUrl?: string };
+}
+
+const {
+  rootPrefix = "/",
+  currentPage = "home",
+  sidebarLinks,
+  sidebarSectionLabel = "In this section",
+  docHeadings,
+  site,
+} = Astro.props;
+
+const page = currentPage.toLowerCase();
+const active = page === "" ? "home" : page;
+
+const navLinks = [
+  { key: "home", href: rootPrefix, label: "Home", icon: "lucide:home" },
+  {
+    key: "docs",
+    href: `${rootPrefix}docs/`,
+    label: "Docs",
+    icon: "lucide:book-open",
+  },
+  {
+    key: "blog",
+    href: `${rootPrefix}blog/`,
+    label: "Blog",
+    icon: "lucide:newspaper",
+  },
+];
+---
+
+<aside class="site-sidebar">
+  <div class="site-sidebar-header">
+    <a href={rootPrefix} class="site-sidebar-logo">
+      <img src={`${rootPrefix}assets/icon.png`} alt="" width="24" height="24" />
+      <span>{siteData.title}</span>
+    </a>
+  </div>
+
+  <nav class="site-sidebar-nav" aria-label="Primary navigation">
+    {
+      navLinks.map((link) => (
+        <a
+          href={link.href}
+          class:list={["site-nav-link", { active: link.key === active }]}
+          {...(link.key === active ? { "aria-current": "page" } : {})}
+        >
+          <iconify-icon
+            icon={link.icon}
+            width="16"
+            height="16"
+            aria-hidden="true"
+          />
+          <span>{link.label}</span>
+        </a>
+      ))
+    }
+  </nav>
+
+  {
+    docHeadings && docHeadings.length > 0 ? (
+      <div class="site-sidebar-context">
+        <p>On this page</p>
+        <nav>
+          {docHeadings.map((h) => (
+            <a
+              href={`#${h.id}`}
+              class:list={["site-section-link", `toc-h${h.level}`]}
+              data-toc-id={h.id}
+            >
+              <span>{h.text}</span>
+              <iconify-icon
+                icon="lucide:chevron-right"
+                width="12"
+                height="12"
+                aria-hidden="true"
+              />
+            </a>
+          ))}
+        </nav>
+      </div>
+    ) : sidebarLinks && sidebarLinks.length > 0 ? (
+      <div class="site-sidebar-context">
+        <p>{sidebarSectionLabel}</p>
+        {sidebarLinks && sidebarLinks.length > 8 && (
+          <div class="sidebar-search-wrap">
+            <iconify-icon
+              icon="lucide:search"
+              width="13"
+              height="13"
+              aria-hidden="true"
+              class="sidebar-search-icon"
+            />
+            <input
+              type="search"
+              class="sidebar-search-input"
+              placeholder="Filter..."
+              aria-label="Filter sidebar navigation"
+              id="sidebar-filter-input"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+        )}
+        <nav>
+          {(() => {
+            let lastSection = "";
+            return sidebarLinks.map((link) => {
+              const showSection = link.section && link.section !== lastSection;
+              if (showSection) lastSection = link.section;
+              const isAnchor = link.href.startsWith("#");
+              return (
+                <>
+                  {showSection && (
+                    <p class="site-sidebar-subsection">{link.section}</p>
+                  )}
+                  <a
+                    href={link.href}
+                    class:list={["site-section-link", { active: link.active }]}
+                    data-search-text={(link.label || "").toLowerCase()}
+                    data-toc-id={isAnchor ? link.href.slice(1) : undefined}
+                  >
+                    <span>{link.label}</span>
+                    <iconify-icon
+                      icon="lucide:chevron-right"
+                      width="12"
+                      height="12"
+                      aria-hidden="true"
+                    />
+                  </a>
+                </>
+              );
+            });
+          })()}
+        </nav>
+      </div>
+    ) : null
+  }
+
+  <div class="site-sidebar-footer">
+    <div class="sidebar-social-row">
+      {siteData.links.github && (
+        <a
+          href={siteData.links.github}
+          target="_blank"
+          rel="noopener"
+          aria-label="GitHub"
+        >
+          <iconify-icon
+            icon="lucide:github"
+            width="16"
+            height="16"
+            aria-hidden="true"></iconify-icon>
+        </a>
+      )}
+      {siteData.links.discord && (
+        <a
+          href={siteData.links.discord}
+          target="_blank"
+          rel="noopener"
+          aria-label="Discord"
+        >
+          <iconify-icon
+            icon="simple-icons:discord"
+            width="16"
+            height="16"
+            aria-hidden="true"></iconify-icon>
+        </a>
+      )}
+      <a href="#" id="about-btn" aria-label="About">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"
+          ></path><path d="M12 8h.01"></path></svg
+        >
+      </a>
+    </div>
+  </div>
+</aside>
+
+<div id="mobile-drawer-overlay" aria-hidden="true"></div>
+<aside
+  id="mobile-drawer"
+  class="mobile-drawer"
+  aria-label="Navigation menu"
+  aria-modal="true"
+  role="dialog"
+>
+  <div class="mobile-drawer-header">
+    <a href={rootPrefix} class="site-sidebar-logo">
+      <img src={`${rootPrefix}assets/icon.png`} alt="" width="24" height="24" />
+      <span>{siteData.title}</span>
+    </a>
+    <button
+      type="button"
+      id="mobile-drawer-close"
+      aria-label="Close navigation menu"
+    >
+      <iconify-icon icon="lucide:x" width="18" height="18" aria-hidden="true"
+      ></iconify-icon>
+    </button>
+  </div>
+
+  <nav
+    class="site-sidebar-nav mobile-drawer-nav"
+    aria-label="Primary navigation"
+  >
+    {
+      navLinks.map((link) => (
+        <a
+          href={link.href}
+          class:list={["site-nav-link", { active: link.key === active }]}
+          {...(link.key === active ? { "aria-current": "page" } : {})}
+        >
+          <iconify-icon
+            icon={link.icon}
+            width="18"
+            height="18"
+            aria-hidden="true"
+          />
+          <span>{link.label}</span>
+        </a>
+      ))
+    }
+  </nav>
+
+  {
+    ((docHeadings && docHeadings.length > 0) ||
+      (sidebarLinks && sidebarLinks.length > 0)) && (
+      <div class="site-sidebar-context mobile-drawer-context">
+        <p>
+          {docHeadings && docHeadings.length > 0
+            ? "On this page"
+            : sidebarSectionLabel}
+        </p>
+        <nav>
+          {docHeadings && docHeadings.length > 0
+            ? docHeadings.map((h) => (
+                <a
+                  href={`#${h.id}`}
+                  class:list={["site-section-link", `toc-h${h.level}`]}
+                  data-toc-id={h.id}
+                >
+                  <span>{h.text}</span>
+                  <iconify-icon
+                    icon="lucide:chevron-right"
+                    width="12"
+                    height="12"
+                    aria-hidden="true"
+                  />
+                </a>
+              ))
+            : (() => {
+                let lastSection = "";
+                return sidebarLinks!.map((link) => {
+                  const showSection =
+                    link.section && link.section !== lastSection;
+                  if (showSection) lastSection = link.section!;
+                  return (
+                    <>
+                      {showSection && (
+                        <p class="site-sidebar-subsection">{link.section}</p>
+                      )}
+                      <a
+                        href={link.href}
+                        class:list={[
+                          "site-section-link",
+                          { active: link.active },
+                        ]}
+                        data-search-text={(link.label || "").toLowerCase()}
+                      >
+                        <span>{link.label}</span>
+                        <iconify-icon
+                          icon="lucide:chevron-right"
+                          width="12"
+                          height="12"
+                          aria-hidden="true"
+                        />
+                      </a>
+                    </>
+                  );
+                });
+              })()}
+        </nav>
+      </div>
+    )
+  }
+</aside>

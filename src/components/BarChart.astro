@@ -1,0 +1,148 @@
+---
+import InteractiveChart from "./InteractiveChart.astro";
+
+interface Bar {
+  label: string;
+  value: number;
+}
+
+interface Props {
+  title?: string;
+  bars: Bar[];
+  caption?: string;
+  interactive?: boolean;
+}
+
+const { title, bars, caption, interactive = false } = Astro.props;
+const max = Math.max(...bars.map((b) => b.value));
+---
+
+{
+  interactive ? (
+    <InteractiveChart
+      title={title}
+      type="bar"
+      data={bars.map((b) => ({ label: b.label, value: b.value }))}
+      caption={caption}
+    />
+  ) : (
+    <div class="bar-chart">
+      {title && <h3 class="bar-chart__title">{title}</h3>}
+      <div class="bar-chart__grid">
+        {bars.map((bar) => {
+          const pct = Math.round((bar.value / max) * 100);
+          return (
+            <div class="bar-chart__row">
+              <span class="bar-chart__label">{bar.label}</span>
+              <div class="bar-chart__track">
+                <div
+                  class="bar-chart__fill"
+                  style={`width: 100%;`}
+                  data-scale={pct / 100}
+                >
+                  <span class="bar-chart__pct">{pct}%</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {caption && <p class="bar-chart__caption">{caption}</p>}
+    </div>
+  )
+}
+
+<style>
+  .bar-chart {
+    width: 100%;
+    margin: 1.5rem 0;
+  }
+
+  .bar-chart__title {
+    margin: 0 0 0.75rem;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-1);
+  }
+
+  .bar-chart__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bar-chart__row {
+    display: grid;
+    grid-template-columns: minmax(6rem, max-content) 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .bar-chart__label {
+    font-size: 13px;
+    color: var(--color-text-2);
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 160px;
+  }
+
+  .bar-chart__track {
+    height: 22px;
+    background: var(--color-bg-3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .bar-chart__fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    transform-origin: left center;
+    transform: scaleX(0);
+  }
+
+  .bar-chart__pct {
+    font-size: 11px;
+    font-weight: 600;
+    color: #000;
+    white-space: nowrap;
+  }
+
+  .bar-chart__caption {
+    margin: 0.5rem 0 0;
+    font-size: 12px;
+    color: var(--color-text-3);
+    text-align: center;
+  }
+</style>
+
+<script>
+  const fills = document.querySelectorAll(".bar-chart__fill");
+  if ("IntersectionObserver" in window) {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.style.transition =
+              "transform 600ms cubic-bezier(0.16, 1, 0.3, 1)";
+            e.target.style.transform = `scaleX(${(e.target as HTMLElement).dataset.scale || 1})`;
+            obs.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.1 },
+    );
+    fills.forEach((f) => obs.observe(f));
+  } else {
+    fills.forEach((f) => {
+      (f as HTMLElement).style.transform =
+        `scaleX(${(f as HTMLElement).dataset.scale || 1})`;
+    });
+  }
+</script>

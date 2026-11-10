@@ -1,0 +1,31 @@
+---
+title: "File Manager"
+description: "Browse and edit server files in the browser."
+section: "Features"
+order: 12
+---
+
+The file manager works on one server's volume through the daemon. Every path is confined to that volume and symlinks are refused.
+
+## What you can do
+
+- Browse folders, open and edit text files.
+- Upload files, and download a file or several at once.
+- Create folders, rename, move and copy.
+- Compress items into an archive, and extract archives.
+- Pull a file from a URL straight onto the server. Downloads from private network addresses are blocked unless the node sets `ALLOW_PRIVATE_DOWNLOADS=true`.
+
+Files up to 5 MB can be opened in the browser editor, and writes respect the server's disk quota.
+
+## Recycle bin
+
+Deleting a file moves it to a recycle bin instead of removing it. Items stay for **3 days**, can be restored one by one or all at once, and can be purged early. Choosing a permanent delete skips the bin.
+
+## Permissions
+
+| Action | Permission needed |
+|---|---|
+| Browse, read and download | `files.read` |
+| Edit, upload, move, delete and archive | `files.write` |
+
+For command-line access, see [SFTP](/docs/daemon/sftp/).

@@ -1,0 +1,18 @@
+---
+title: "Storage Layer"
+description: "How the panel persists data in PostgreSQL."
+section: "Development"
+order: 62
+---
+
+The panel does not use an ORM. `server/storage/` provides a document store over PostgreSQL.
+
+- `PostgresDriver` opens the connection pool and takes a session-level **advisory lock**, which is how a second panel process is refused.
+- `DocStore` keeps the working set in memory, and each save writes only the changed rows in a single transaction. Failed writes retry every 5 seconds.
+- Four tables hold the data, named with the table prefix (`mp_` by default): `mp_docs`, `mp_maps`, `mp_kv` and `mp_meta`.
+- `server/db.ts` defines the schema, the defaults and the migrations that run on load.
+- `pgDumpToFile` powers the admin backup button.
+
+`npm run db:info` shows which database is in use and what is in it. Stop the panel before running it.
+
+See [PostgreSQL](/docs/configuration/database/) for setup and backups.

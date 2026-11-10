@@ -1,0 +1,59 @@
+---
+title: "Daemon Overview"
+description: "What the daemon is and how to install it on a node."
+section: "Daemon"
+order: 80
+---
+
+The daemon is one agent per node. It runs customer **servers** (bots, games, apps) and customer **VPSes** for the panel, on one port with one secret. It has no npm runtime dependencies except the PostgreSQL driver, and it works on any kind of machine.
+
+| Feature | Needs | Routes |
+|---|---|---|
+| Servers | Nothing (Docker, Podman or the native sandbox) | `/v1/servers/*` |
+| VPSes | Docker CLI | `/v1/vps/*` |
+
+A node without Docker still runs servers, and VPS routes answer `501` until Docker is installed.
+
+## Requirements
+
+- Node.js 20 or newer.
+- A PostgreSQL 12+ database for the daemon's state.
+- Optionally one of Docker, Podman or `bubblewrap`. VPS hosting needs Docker.
+- `tar`, and `unzip` for zip extraction, for backups and archives.
+
+## Install
+
+The quickest way is the one-line installer, which sets up Node.js, PostgreSQL and the daemon service for you:
+
+```bash
+curl -fsSL %SITE_URL%/installer.sh | bash -s -- --install-daemon
+```
+
+Then link the node with the secret from the panel's **Add node** screen: `monopanel link-node --key <secret>`.
+
+To install by hand instead, add the node in the panel under **Admin → Nodes** and/or **Admin → VPS Nodes**, clone the daemon on the machine, and run the command the panel shows. It looks like this:
+
+```bash
+git clone https://github.com/MonoPanelOFFICIAL/MonoPanel-daemon.git /opt/monopanel-daemon
+cd /opt/monopanel-daemon && npm install && npm run build && npm run configure -- --panel <panel-url> --key <secret> --port 3002 --allow <panel-ip> --database <postgres-url> && npm start
+```
+
+`configure` writes `.env` with mode 600. Add `--vps docker|auto|mock|off` to set `VPS_RUNTIME`, `--sftp 2022` to enable SFTP, and `--database <url>` to set `DATABASE_URL`. If you register the same address as a server node and a VPS node, the panel uses one shared secret, so you configure the daemon once. Keep the secret private, and rotate it from the panel at any time.
+
+## Configuration
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `DAEMON_SECRET` | none | Shared secret, 32 characters or more. Required |
+| `DATABASE_URL` | none | PostgreSQL connection string. Required |
+| `DAEMON_HOST`, `DAEMON_PORT` | `0.0.0.0`, `3002` | Where the daemon listens |
+| `ALLOWED_IPS` | empty | Comma-separated panel IPs allowed to connect. Strongly recommended |
+| `TLS_CERT`, `TLS_KEY` | empty | Optional TLS |
+| `RUNTIME` | `auto` | `auto`, `docker`, `podman` or `process` |
+| `DATA_DIR`, `VOLUMES_DIR`, `BACKUPS_DIR` | `./data` and below | Where files are stored |
+| `PORT_MIN`, `PORT_MAX` | `20000`, `40000` | Host ports servers may bind |
+| `CONTAINER_UID`, `CONTAINER_GID` | `1000` | Owner of volume files |
+| `SFTP_PORT` | `0` | `0` disables SFTP |
+| `MAX_TRANSFER_MB` | `20480` | Largest server accepted from another node |
+
+The daemon refuses to start with a missing or weak secret, a bad port range or a missing database URL. See [Runtimes](/docs/daemon/runtimes/), [VPS](/docs/daemon/vps/) and [State](/docs/daemon/state/) for the other settings.
