@@ -1,4 +1,4 @@
-name: Build site
+name: Build and deploy site
 
 on:
   push:
@@ -8,9 +8,17 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 env:
   NODE_VERSION: "22"
   PNPM_VERSION: "10"
+  # Public URL of the site (used for /installer.sh, the install command and canonical URLs).
+  # Set a repository variable named SITE_URL (Settings > Secrets and variables > Actions > Variables)
+  # if you use a custom domain; otherwise the GitHub Pages address below is used.
+  SITE_URL: ${{ vars.SITE_URL || 'https://monopanelofficial.github.io' }}
 
 jobs:
   build:
@@ -39,17 +47,30 @@ jobs:
         run: pnpm astro build
         env:
           NODE_ENV: production
-          # Public domain, e.g. https://monopanel.example.com (repo variable). Used for /installer.sh and the install command.
-          SITE_URL: ${{ vars.SITE_URL }}
 
       - name: Verify build output
         run: |
           test -d dist || { echo "::error::dist/ was not created"; exit 1; }
           echo "HTML pages: $(find dist -name '*.html' | wc -l)"
+          test -s dist/index.html || { echo "::error::dist/index.html was not created"; exit 1; }
           test -s dist/installer.sh || { echo "::error::dist/installer.sh was not created"; exit 1; }
 
-      - name: Upload build
-        uses: actions/upload-artifact@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: site
           path: dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
