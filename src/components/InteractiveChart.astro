@@ -1,0 +1,214 @@
+---
+interface DataPoint {
+  label: string;
+  value: number;
+}
+
+interface Props {
+  title?: string;
+  type?: "bar" | "line" | "doughnut";
+  data: DataPoint[];
+  caption?: string;
+  height?: string;
+}
+
+const { title, type = "bar", data, caption, height = "280px" } = Astro.props;
+
+const chartId = `chart-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<div
+  class="chart-wrap"
+  data-chart-type={type}
+  data-chart-data={JSON.stringify(data)}
+>
+  {title && <h3 class="chart-title">{title}</h3>}
+
+  <div class="chart-box" style={`min-height: ${height};`}>
+    <canvas
+      id={chartId}
+      role="img"
+      aria-label={title ? `Chart: ${title}` : "Chart"}></canvas>
+  </div>
+
+  {caption && <p class="chart-caption">{caption}</p>}
+</div>
+
+<script
+  is:inline
+  src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+
+<script>
+  function initCharts() {
+    document
+      .querySelectorAll(".chart-wrap[data-chart-data]")
+      .forEach((wrap) => {
+        const el = wrap as HTMLElement;
+        const canvas = el.querySelector("canvas") as HTMLCanvasElement | null;
+        if (!canvas || (canvas as any).__chartInitialized) return;
+        (canvas as any).__chartInitialized = true;
+
+        const chartType = el.dataset.chartType || "bar";
+        let dataPoints: { label: string; value: number }[];
+        try {
+          dataPoints = JSON.parse(el.dataset.chartData || "[]");
+        } catch {
+          return;
+        }
+
+        const labels = dataPoints.map((d) => d.label);
+        const values = dataPoints.map((d) => d.value);
+        const reduced = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+
+        const datasets: Record<string, any[]> = {
+          bar: [
+            {
+              label: "Value",
+              data: values,
+              backgroundColor: "#fff",
+              borderColor: "#fff",
+              borderWidth: 0,
+              borderRadius: 4,
+              barPercentage: 0.7,
+              categoryPercentage: 0.8,
+            },
+          ],
+          line: [
+            {
+              label: "Value",
+              data: values,
+              borderColor: "#fff",
+              backgroundColor: "rgba(255,255,255,0.08)",
+              borderWidth: 2,
+              pointRadius: 4,
+              pointHoverRadius: 7,
+              pointBackgroundColor: "#fff",
+              pointBorderColor: "#000",
+              pointBorderWidth: 2,
+              fill: true,
+              tension: 0.35,
+            },
+          ],
+          doughnut: [
+            {
+              label: "Value",
+              data: values,
+              backgroundColor: ["#fff", "#888"],
+              borderColor: "#000",
+              borderWidth: 3,
+              hoverBorderColor: "#fff",
+              hoverOffset: 8,
+            },
+          ],
+        };
+
+        const isHorizontal = chartType === "bar";
+
+        const options: any = {
+          indexAxis: isHorizontal ? "y" : "x",
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: reduced
+            ? false
+            : { duration: 700, easing: "easeOutQuart" },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "#000",
+              titleColor: "#fff",
+              bodyColor: "#ccc",
+              borderColor: "#333",
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 10,
+              titleFont: { weight: "600" },
+              callbacks: {
+                label: (ctx: any) =>
+                  ` ${ctx.parsed.x ?? ctx.parsed.y ?? ctx.parsed}`,
+              },
+            },
+          },
+          layout: {
+            padding: { left: 0, right: 8, top: 4, bottom: 4 },
+          },
+        };
+
+        if (chartType === "line") {
+          options.scales = {
+            x: {
+              grid: { color: "rgba(255,255,255,0.08)", drawBorder: false },
+              ticks: { color: "#888", font: { size: 11 } },
+            },
+            y: {
+              grid: { color: "rgba(255,255,255,0.08)", drawBorder: false },
+              ticks: { color: "#888", font: { size: 11 } },
+              beginAtZero: true,
+            },
+          };
+        } else if (isHorizontal) {
+          options.scales = {
+            x: {
+              grid: { color: "rgba(255,255,255,0.08)", drawBorder: false },
+              ticks: { color: "#888", font: { size: 11 } },
+              beginAtZero: true,
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: "#ccc", font: { size: 12 } },
+            },
+          };
+        }
+
+        const chart = new (window as any).Chart(canvas, {
+          type: chartType === "bar" ? "bar" : chartType,
+          data: { labels, datasets: datasets[chartType] || datasets.bar },
+          options,
+        });
+
+        (el as any).__chart = chart;
+      });
+  }
+
+  function boot() {
+    if (typeof (window as any).Chart === "undefined") {
+      setTimeout(boot, 80);
+      return;
+    }
+    initCharts();
+  }
+
+  document.addEventListener("astro:page-load", boot);
+  boot();
+</script>
+
+<style>
+  .chart-wrap {
+    width: 100%;
+    margin: 1.5rem 0;
+  }
+
+  .chart-title {
+    margin: 0 0 0.75rem;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-1);
+  }
+
+  .chart-box {
+    position: relative;
+    width: 100%;
+  }
+
+  .chart-box canvas {
+    width: 100% !important;
+  }
+
+  .chart-caption {
+    margin: 0.5rem 0 0;
+    font-size: 12px;
+    color: var(--color-text-3);
+    text-align: center;
+  }
+</style>

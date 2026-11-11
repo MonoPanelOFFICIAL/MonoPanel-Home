@@ -1,0 +1,77 @@
+---
+title: "Admin Getting Started"
+description: "Install the panel, sign in, add a node and open the admin panel."
+section: "Administration"
+order: 30
+---
+
+This page walks through a first install. You need a machine for the panel and at least one machine for a node (they can be the same machine while you are testing).
+
+## Quick install
+
+On a Linux machine (x64 or arm64), run one command:
+
+```bash
+curl -fsSL %SITE_URL%/installer.sh | bash
+```
+
+The installer asks what to install (panel, daemon or both), sets up Node.js, PostgreSQL and the services, and prints the panel URL and a generated admin password. For a scripted install with no prompts:
+
+```bash
+curl -fsSL %SITE_URL%/installer.sh | bash -s -- --install-both --yes
+```
+
+It works as root, with sudo, or without root (everything then lives in `~/.monopanel`). The rest of this page is the manual install.
+
+## Requirements
+
+- Node.js 22.13 or newer and npm for the panel.
+- PostgreSQL 12 or newer. The panel will not start without it.
+- A reverse proxy for HTTPS in production (see [Deployment](/docs/admin/deployment/)).
+
+## 1. Create the database
+
+```sql
+CREATE USER monopanel WITH PASSWORD 'change-me';
+CREATE DATABASE monopanel OWNER monopanel;
+```
+
+Tables are created automatically on first start.
+
+## 2. Install and configure the panel
+
+```bash
+git clone https://github.com/MonoPanelOFFICIAL/MonoPanel-Panel.git /opt/monopanel-panel
+cd /opt/monopanel-panel
+npm install
+cp .env.example .env
+```
+
+Edit `.env` and set at least `DATABASE_URL`, `APP_URL`, `ALLOWED_ORIGINS` and `JWT_SECRET`. You can generate a secret with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+
+If you leave `JWT_SECRET` empty the panel generates a strong one and stores it in `data/.jwt_secret`. Back up both `data/.jwt_secret` and `data/.app_secret`: losing `APP_SECRET` means re-entering node secrets.
+
+## 3. Build and start
+
+```bash
+npm run build
+npm start
+```
+
+The panel listens on port `3000` by default.
+
+## 4. Sign in
+
+On first start the panel creates a super admin account. Use the email and password you set in `MONOPANEL_ADMIN_EMAIL` and `MONOPANEL_ADMIN_PASSWORD`. If you did not set them, the defaults are `admin@monopanel.com` and `MonoPanelOPP`. These defaults are public, so change the password immediately. The server logs a warning while the default password is in use.
+
+## 5. Add a node
+
+Open **Admin → Nodes** to host servers or **Admin → VPS Nodes** to host VPSes, and add the node. The panel shows the exact command to run on the node, with the secret filled in. See [Daemon overview](/docs/daemon/overview/). If you register the same address in both places, the panel uses one shared secret, so you configure the daemon once.
+
+## 6. Define what you sell
+
+Use **Products & Plans** to create plans and **Orders & Billing** to review payments. The public Bot Hosting, VPS Hosting and Pricing pages read their prices and features from these plans.

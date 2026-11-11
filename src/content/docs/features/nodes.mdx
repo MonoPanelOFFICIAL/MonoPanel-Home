@@ -1,0 +1,38 @@
+---
+title: "Nodes"
+description: "Add machines that run servers and VPSes."
+section: "Features"
+order: 17
+---
+
+A node is a machine running the [MonoPanel daemon](/docs/daemon/overview/).
+
+## Adding a node
+
+Add a node under **Admin → Nodes** for servers, or **Admin → VPS Nodes** for VPSes. The panel generates a secret and shows the command to run on the machine. If you register the same host and port in both places, the panel treats them as one daemon and shares a single secret.
+
+## Node settings
+
+| Setting | Meaning |
+|---|---|
+| Name, location and flag | Shown in the create wizard |
+| `fqdn` | Address customers connect to |
+| `daemonHost`, `daemonPort`, scheme | Address the panel calls |
+| `sftpPort` | `0` means SFTP is not offered on this node |
+| RAM, CPU and disk | Capacity of the node |
+| Over-allocation | Percent above capacity the panel may allocate, `0` is strict |
+| Max servers | `0` is unlimited |
+| Port range | Host ports the panel may allocate |
+| Public | Off hides the node from the create wizard |
+| Maintenance | Takes the node out of new deployments |
+| Premium only | Reserves the node for paid plans |
+
+## Operations
+
+From the node's page you can test the connection, toggle it, reconcile the panel's records with the node, prune leftovers, and rotate the secret. Rotating a node's secret also updates every node that shares the same daemon.
+
+The panel stores node secrets encrypted with AES-256-GCM and never sends them to the browser.
+
+## Status
+
+The panel checks each node's health and shows whether it is online, the daemon version, the runtime, hostname and system load, memory and disk figures.

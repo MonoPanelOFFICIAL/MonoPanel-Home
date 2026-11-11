@@ -1,0 +1,35 @@
+---
+title: "File System Operations"
+description: "The file endpoints and the recycle bin."
+section: "Daemon"
+order: 83
+---
+
+All file routes are scoped to one server's volume. Paths are validated and symlinks are refused.
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/v1/servers/:id/files?path=` | List a directory |
+| GET | `/v1/servers/:id/files/content?path=` | Read a text file (up to 5 MB) |
+| PUT | `/v1/servers/:id/files/content` | Write a text file (quota checked) |
+| POST | `/v1/servers/:id/files/mkdir` | Create a folder |
+| POST | `/v1/servers/:id/files/rename` | Rename |
+| POST | `/v1/servers/:id/files/move` | Move items |
+| POST | `/v1/servers/:id/files/copy` | Copy items |
+| POST | `/v1/servers/:id/files/delete` | Delete (to the recycle bin unless `permanent`) |
+| POST | `/v1/servers/:id/files/archive` | Create an archive |
+| POST | `/v1/servers/:id/files/extract` | Extract an archive |
+| POST | `/v1/servers/:id/files/pull` | Download a URL onto the server |
+| POST | `/v1/servers/:id/files/upload` | Upload |
+| GET | `/v1/servers/:id/files/download` | Download a file |
+| POST | `/v1/servers/:id/files/bulk-download` | Download several items |
+
+## Recycle bin
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/v1/servers/:id/recycle` | List items and the retention period |
+| POST | `/v1/servers/:id/recycle/restore` | Restore by id, or `all` |
+| POST | `/v1/servers/:id/recycle/purge` | Delete forever, by id or `all` |
+
+Items stay in the bin for **3 days**. The index lives in the daemon's PostgreSQL database.

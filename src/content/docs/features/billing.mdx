@@ -1,0 +1,42 @@
+---
+title: "Billing & Credits"
+description: "Credits, orders, coupons, manual payment verification and Stripe cards."
+section: "Features"
+order: 22
+---
+
+## Credits
+
+Customers hold a balance of credits and spend it on orders and addons. Credits are added only after staff approve a payment.
+
+## Payment methods
+
+Customers can pay by **UPI**, **bank transfer**, **crypto** or **gift card**, and by **card through Stripe Checkout** once you enable it. Configure the details customers see under the admin payment settings.
+
+### Manual payments
+
+Every manual payment is verified by staff before credits are added:
+
+1. The customer creates an order or adds credits.
+2. The order is recorded as pending and appears in the **Orders & Billing** queue.
+3. Staff verify the payment and approve or decline it.
+4. On approval credits are added and a notification is sent.
+
+### Stripe Checkout
+
+Card payments use Stripe Checkout over plain REST, with no SDK. Money only moves after Stripe's **signed webhook** confirms the payment, never because the browser was redirected back.
+
+1. In the admin panel's hosting Stripe settings, enter your secret key (`sk_test_…`, `sk_live_…` or a restricted `rk_` key) and the webhook signing secret (`whsec_…`). Both are encrypted at rest and never shown again.
+2. Add a Stripe webhook endpoint pointing at `<APP_URL>/api/v1/stripe/webhook` for `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed` and `checkout.session.expired`.
+3. Use the **Test** button to validate the key and see whether it is a test or live account.
+4. Enable Stripe. It cannot be enabled until both secrets are saved.
+
+Set the currency and the instructions customers see in the same settings.
+
+## Coupons
+
+Admins can create, toggle and delete coupons. Customers redeem them in their dashboard, and coupons can also be validated at checkout.
+
+## Orders
+
+Admins can view, approve, decline and reject orders. VPS orders can be handled by the checkout flow when that setting is on.

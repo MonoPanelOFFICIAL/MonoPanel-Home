@@ -1,0 +1,451 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Sidebar from "../components/Sidebar.astro";
+import site from "../data/site.json";
+import { FALLBACK_SITE_URL, resolveSiteUrl } from "../lib/site-url.mjs";
+
+const features = site.features || [];
+const links = site.links || {};
+const version = site.version;
+const install = site.install;
+
+// Public URL of this site; the one-line installer is served from <siteUrl>/installer.sh.
+// When no URL is configured the command shows a placeholder and the page script swaps in
+// the origin the visitor is actually on.
+const siteUrl = resolveSiteUrl(site.siteUrl, Astro.site?.href);
+const installCommand = `curl -fsSL ${siteUrl || FALLBACK_SITE_URL}/installer.sh | bash`;
+
+const homeSidebarLinks = [
+  { label: "Start here", href: "#start" },
+  { label: "What it does", href: "#about" },
+  { label: "Features", href: "#features" },
+  { label: "Panel + daemon", href: "#projects" },
+  { label: "Install", href: "#install" },
+];
+
+const featureIcons: Record<string, string> = {
+  servers: "lucide:server",
+  console: "lucide:terminal",
+  files: "lucide:folder-open",
+  nodes: "lucide:network",
+  vps: "lucide:cpu",
+  billing: "lucide:wallet",
+  support: "lucide:life-buoy",
+  subusers: "lucide:users",
+  backups: "lucide:archive",
+  schedules: "lucide:calendar-clock",
+  sftp: "lucide:lock",
+  addons: "lucide:puzzle",
+  api: "lucide:plug",
+};
+
+const showcaseKeys = ["panel", "daemon", "platform"];
+const installTabs = [
+  { key: "panel", steps: install.panelSteps },
+  { key: "daemon", steps: install.daemonSteps },
+];
+
+const showcases: Record<string, { title: string; text: string; detail: string }[]> = {
+  panel: [
+    {
+      title: "Customer dashboard",
+      text: "Customers sign up with email and password, or with Google or Discord. From one dashboard they create servers and VPSes, open support tickets, read their mail, add credits, redeem coupons and follow their activity log.",
+      detail:
+        "Accounts have five roles: user, support, moderator, admin and super admin. Sessions use signed tokens, passwords are hashed, and the API is rate limited with a CORS allow-list. VPN and proxy blocking is optional.",
+    },
+    {
+      title: "Admin panel",
+      text: "A control plane for everything you sell: system overview, user accounts, orders and billing, products and plans, coupons, nodes, announcements, the Discord integration, fonts and themes, an audit trail, API keys and legal pages.",
+      detail:
+        "The overview shows total users, revenue with the last 30 days, orders waiting for approval and tickets waiting for a reply, with quick actions that jump straight to the pending work.",
+    },
+    {
+      title: "Public storefront",
+      text: "Home, Bot Hosting, VPS Hosting and Pricing pages, a status page with incidents and scheduled maintenance, a docs page and editable legal pages. Product cards read prices and features from your real plans.",
+      detail:
+        "Because the storefront reads your live catalogue, what the site shows never drifts from what you actually sell.",
+    },
+  ],
+  daemon: [
+    {
+      title: "Servers",
+      text: "The daemon runs customer servers in Docker, Podman or, when no container engine exists, a native process sandbox using bubblewrap. Runtime selection is automatic, and gVisor, Kata or Sysbox can be added for stronger isolation.",
+      detail:
+        "Containers drop all capabilities, forbid privilege escalation and are limited in RAM, swap, CPU and process count. The daemon enforces each server's disk quota and confines every file path to the server's own volume.",
+    },
+    {
+      title: "VPSes",
+      text: "Every VPS is a Docker container built from the daemon's ROM: Ubuntu or Debian with sshd, Docker, Node.js, pm2 and build tools. Customers choose Ubuntu 22.04, Ubuntu 24.04 or Debian 12.",
+      detail:
+        "Pre-build an OS image at daemon start so the first customer does not wait. With the Sysbox runtime customers can run Docker inside their VPS safely. A node without Docker keeps running servers, and VPS routes answer 501 until Docker is installed.",
+    },
+    {
+      title: "SFTP, backups and node switching",
+      text: "An optional built-in SFTP server gives each customer a login that sees one server and nothing else. Backups are archived on the node, and a server can be moved to another node with its files.",
+      detail:
+        "Node switching streams the server between daemons with a checksum, verifies it, and rolls back on any failure so the server stays where it was. The daemon runs on a single port with a single secret.",
+    },
+  ],
+  platform: [
+    {
+      title: "Signed requests only",
+      text: "Every panel-to-daemon request carries a timestamp, a single-use nonce and an HMAC-SHA256 signature over the method, path and body hash. No signature, no answer.",
+      detail:
+        "Requests older than 60 seconds are refused and replayed nonces are rejected. Restrict the daemon to your panel's IP with an allow-list and add TLS when the panel and node are on different networks.",
+    },
+    {
+      title: "PostgreSQL, nothing else",
+      text: "The panel and the daemon both keep their state in PostgreSQL 12 or newer. There is no embedded SQLite mode and no JSON database file. Tables are created on first start.",
+      detail:
+        "Only one panel process may use a database, and a second one is refused on purpose. The admin panel can run pg_dump backups, and writes retry every five seconds if the database goes away.",
+    },
+    {
+      title: "REST API and webhooks",
+      text: "Admins create API keys with scopes, IP allow-lists and expiry dates, and can revoke or rotate them at any time. Webhooks are signed with HMAC-SHA256 and can be tested from the panel.",
+      detail:
+        "Webhook targets must resolve to public addresses, and the resolved address is pinned for the request so an internal service cannot be reached through a webhook.",
+    },
+  ],
+};
+---
+
+<BaseLayout
+  description={`${site.title} ${version.label}. Discord bot hosting and VPS hosting platform with a storefront, billing, support desk, admin panel and a lightweight daemon for every node.`}
+  bodyClass="docs-shell-body"
+>
+  <a href="#page-content" class="skip-link">Skip to main content</a>
+
+  <Sidebar
+    rootPrefix="/"
+    currentPage="home"
+    sidebarLinks={homeSidebarLinks}
+    sidebarSectionLabel="Explore"
+    site={site}
+  />
+
+  <main class="docs-main">
+    <div class="hub-content" id="page-content">
+      <!-- Hero -->
+      <div class="hero-viewport" id="start">
+        <div class="hero-bg" aria-hidden="true">
+          <img src="/assets/logo.svg" alt="" width="320" height="239" loading="eager" />
+        </div>
+        <div class="hero-layout">
+          <section class="hub-hero hero-text-animated" data-animate="blur">
+            <div>
+              <p class="hub-overline">
+                Self-hosted · Bot hosting · VPS hosting
+                <span class="stable-badge" aria-label={`${version.channel} release ${version.label}`}>
+                  {version.channel} · {version.label}
+                </span>
+              </p>
+              <h1>Run a hosting business<br />on your own hardware.</h1>
+              <p class="hub-lede">
+                MonoPanel is the storefront, billing system and admin panel for
+                selling Discord bot hosting and VPS hosting. A lightweight
+                daemon on every node runs the customers' servers and VPSes, and
+                everything is stored in PostgreSQL.
+              </p>
+              <div class="hub-actions">
+                <a href="#install" class="btn-primary">
+                  Install MonoPanel
+                  <iconify-icon icon="lucide:arrow-down" width="16" height="16" aria-hidden="true"></iconify-icon>
+                </a>
+                <a href="/docs/" class="btn-secondary">
+                  Read the docs
+                  <iconify-icon icon="lucide:book-open" width="14" height="14" aria-hidden="true"></iconify-icon>
+                </a>
+                {links.github && (
+                  <a href={links.github} class="btn-secondary" target="_blank" rel="noopener">
+                    GitHub
+                    <iconify-icon icon="lucide:github" width="14" height="14" aria-hidden="true"></iconify-icon>
+                  </a>
+                )}
+                {links.discord && (
+                  <a href={links.discord} class="btn-secondary" target="_blank" rel="noopener">
+                    Discord
+                    <iconify-icon icon="simple-icons:discord" width="14" height="14" aria-hidden="true"></iconify-icon>
+                  </a>
+                )}
+              </div>
+            </div>
+          </section>
+          <div class="hero-terminal" aria-label="How MonoPanel is put together">
+            <div class="hero-terminal-bar">
+              <span></span><span></span><span></span>
+              <em>architecture</em>
+            </div>
+<pre><code>customer ──▶ MonoPanel
+             │  storefront · billing
+             │  support · admin panel
+             │
+             ├──▶ PostgreSQL
+             │
+             │  HMAC-signed HTTP
+             ▼
+         daemon (one per node)
+          ├─ servers  Docker · Podman · sandbox
+          ├─ VPSes    Docker
+          ├─ SFTP     optional
+          └─ backups  node switching</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-popup-overlay" id="feature-popup" role="dialog" aria-modal="true" aria-labelledby="feature-popup-title">
+        <div class="feature-popup-content feature-popup--text-only">
+          <div class="feature-popup-left">
+            <img id="feature-popup-img" src="" alt="" />
+          </div>
+          <div class="feature-popup-right">
+            <button class="feature-popup-close" id="feature-popup-close" type="button">&times;</button>
+            <h3 id="feature-popup-title"></h3>
+            <p id="feature-popup-desc" class="feature-popup-desc"></p>
+            <p id="feature-popup-long" class="feature-popup-long"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- What it does -->
+      <section class="hub-section" id="about" data-animate="fade-up">
+        <div class="hub-section-heading">
+          <h2>What MonoPanel does</h2>
+          <p>
+            One repository gives you the public website, customer accounts, a
+            billing and order system, a support desk and a complete admin
+            panel. The daemon does the real work on each node.
+          </p>
+        </div>
+        <div class="about-grid" role="tablist" aria-label="MonoPanel components">
+          <button class="about-card about-card--active" type="button" data-about="panel" role="tab" aria-selected="true" aria-controls="showcase-panel" id="tab-panel">
+            <div class="about-card-icon"><iconify-icon icon="lucide:monitor" width="20" height="20"></iconify-icon></div>
+            <h3>Panel</h3>
+            <p>The website, billing and admin panel.</p>
+          </button>
+          <button class="about-card" type="button" data-about="daemon" role="tab" aria-selected="false" aria-controls="showcase-daemon" id="tab-daemon">
+            <div class="about-card-icon"><iconify-icon icon="lucide:cpu" width="20" height="20"></iconify-icon></div>
+            <h3>Daemon</h3>
+            <p>Runs servers and VPSes on every node.</p>
+          </button>
+          <button class="about-card" type="button" data-about="platform" role="tab" aria-selected="false" aria-controls="showcase-platform" id="tab-platform">
+            <div class="about-card-icon"><iconify-icon icon="lucide:shield-check" width="20" height="20"></iconify-icon></div>
+            <h3>Platform</h3>
+            <p>Security, storage and the API.</p>
+          </button>
+        </div>
+        {
+          showcaseKeys.map((key, idx) => (
+            <div
+              class:list={["feature-showcase", { "feature-showcase--active": idx === 0 }]}
+              data-about-showcase={key}
+              role="tabpanel"
+              id={`showcase-${key}`}
+              aria-labelledby={`tab-${key}`}
+            >
+              {showcases[key].map((row) => (
+                <div class="feature-showcase-row feature-showcase-row--text">
+                  <div class="feature-showcase-text">
+                    <h3>{row.title}</h3>
+                    <p>{row.text}</p>
+                    <p class="feature-showcase-detail">{row.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))
+        }
+      </section>
+
+      <!-- Features -->
+      <section class="hub-section" id="features" data-animate="fade-up">
+        <div class="hub-section-heading">
+          <h2>Everything a host needs</h2>
+          <p>Select a feature to read more about it.</p>
+        </div>
+        <div class="feature-grid-secondary" data-stagger>
+          {
+            features.map((feature: any) => (
+              <button
+                class="feature-grid-item feature-grid-trigger"
+                type="button"
+                data-title={feature.title}
+                data-desc={feature.description}
+                data-long={feature.longDescription || ""}
+                data-id={feature.id}
+              >
+                <div class="feature-grid-item-header">
+                  <iconify-icon icon={featureIcons[feature.id] || "lucide:box"} width="18" height="18" aria-hidden="true" />
+                  <iconify-icon icon="lucide:plus" width="13" height="13" aria-hidden="true" class="feature-expand-icon" />
+                </div>
+                <h4>{feature.title}</h4>
+                <p>{feature.description}</p>
+              </button>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- Panel + daemon -->
+      <section class="hub-section" id="projects" data-animate="fade-up">
+        <div class="hub-section-heading">
+          <h2>Two parts, one system</h2>
+          <p>
+            The panel is the website, billing and admin panel. The daemon runs
+            on each node and does the real work. They talk over HMAC-signed
+            HTTP, so one panel can manage as many nodes as you add.
+          </p>
+        </div>
+        <div class="project-cards" data-stagger>
+          {
+            [
+              {
+                name: "MonoPanel Panel",
+                href: links.githubPanel,
+                body: "React 19, Vite 6, Tailwind 4 and an Express 4 API written in TypeScript. Accounts, billing, support, mail, the admin panel and the signed daemon client, with PostgreSQL storage.",
+                tags: ["TypeScript", "React", "Express", "PostgreSQL"],
+              },
+              {
+                name: "MonoPanel Daemon",
+                href: links.githubDaemon,
+                body: "One agent per node with no npm runtime dependencies beyond the PostgreSQL driver. Runs servers and VPSes, SFTP, backups and node transfers, and answers only to signed requests.",
+                tags: ["Node.js 20+", "Docker", "SFTP", "HMAC-SHA256"],
+              },
+            ].map((p) => {
+              const Tag = p.href ? "a" : "div";
+              const attrs = p.href ? { href: p.href, target: "_blank", rel: "noopener" } : {};
+              return (
+                <Tag class="project-card" {...attrs}>
+                  <div class="project-card-header">
+                    <div class="project-mark">
+                      <img src="/assets/icon.png" alt="" width="25" height="25" loading="lazy" />
+                    </div>
+                    {p.href && (
+                      <span class="project-link-badge">
+                        View repo
+                        <iconify-icon icon="lucide:external-link" width="12" height="12" aria-hidden="true"></iconify-icon>
+                      </span>
+                    )}
+                  </div>
+                  <h3>{p.name}</h3>
+                  <p>{p.body}</p>
+                  <div class="project-tags">
+                    {p.tags.map((t) => <span class="tag">{t}</span>)}
+                  </div>
+                </Tag>
+              );
+            })
+          }
+        </div>
+      </section>
+
+      <!-- Install -->
+      <section class="hub-section hub-section--install" id="install" data-animate="fade-up">
+        <div class="section-bg" style="background-image:url('/assets/bg-install.svg')" aria-hidden="true"></div>
+        <div class="install-layout">
+          <div class="hub-section-heading">
+            <h2>Install {site.title}</h2>
+            <p>
+              Run one command on a Linux machine. The installer sets up
+              Node.js, PostgreSQL, the panel and the daemon, then starts them.
+              Pick what to install from its menu.
+            </p>
+          </div>
+
+          <div class="install-oneline">
+            <pre><code data-install-cmd data-site-url={siteUrl}>{installCommand}</code></pre>
+          </div>
+
+          <ul class="requirements-list">
+            <li>Linux, x64 or arm64 (glibc), with <code>curl</code> or <code>wget</code></li>
+            <li>Works as root, with sudo, or without root (installs into <code>~/.monopanel</code>)</li>
+          </ul>
+
+          <p class="install-note">
+            On a fresh install the installer prints a generated admin password
+            and saves it to <code>install-summary.txt</code>. Change it after
+            your first sign-in. For a scripted install with no prompts, add
+            <code>-s -- --install-both --yes</code> after <code>bash</code>.
+          </p>
+
+          <details class="install-manual">
+            <summary>Manual install</summary>
+
+            <ul class="requirements-list">
+              {install.requirements.map((r: string) => <li>{r}</li>)}
+            </ul>
+
+            <div class="install-tabs" role="tablist" aria-label="Install target">
+              <button class="install-tab" type="button" role="tab" id="install-tab-panel" aria-selected="true" aria-controls="install-panel-panel" data-install-tab="panel">Panel</button>
+              <button class="install-tab" type="button" role="tab" id="install-tab-daemon" aria-selected="false" aria-controls="install-panel-daemon" data-install-tab="daemon">Daemon</button>
+            </div>
+
+            {
+              installTabs.map(({ key, steps }, idx) => (
+                <div class="install-panel" id={`install-panel-${key}`} role="tabpanel" aria-labelledby={`install-tab-${key}`} hidden={idx !== 0}>
+                  <ol class="install-steps">
+                    {steps.map((step: any) => (
+                      <li class="install-step">
+                        <h3>{step.title}</h3>
+                        <pre><code>{step.commands.join("\n")}</code></pre>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ))
+            }
+
+            <p class="install-note">
+              On first start the panel creates a super admin account. Set your
+              own email and password in <code>.env</code> before the first
+              start, or change the default password straight after your first
+              login.
+            </p>
+          </details>
+
+          <div class="install-options">
+            <a href="/docs/admin/getting-started/" class="text-link">
+              Getting started guide
+              <iconify-icon icon="lucide:arrow-right" width="14" height="14" aria-hidden="true"></iconify-icon>
+            </a>
+            <a href="/docs/daemon/overview/" class="text-link">
+              Daemon guide
+              <iconify-icon icon="lucide:arrow-right" width="14" height="14" aria-hidden="true"></iconify-icon>
+            </a>
+            {links.installVideo && (
+              <a href={links.installVideo} class="text-link" target="_blank" rel="noopener">
+                Install video
+                <iconify-icon icon="lucide:external-link" width="14" height="14" aria-hidden="true"></iconify-icon>
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script is:inline>
+    (function () {
+      // No site URL configured at build time: show this site's own origin in the command.
+      document.querySelectorAll("[data-install-cmd]").forEach(function (el) {
+        if (el.getAttribute("data-site-url")) return;
+        el.textContent = el.textContent.replace(
+          "https://your-domain.com",
+          window.location.origin,
+        );
+      });
+
+      var tabs = document.querySelectorAll("[data-install-tab]");
+      tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          var key = tab.getAttribute("data-install-tab");
+          tabs.forEach(function (t) {
+            t.setAttribute("aria-selected", t === tab ? "true" : "false");
+          });
+          document.querySelectorAll(".install-panel").forEach(function (p) {
+            p.hidden = p.id !== "install-panel-" + key;
+          });
+        });
+      });
+    })();
+  </script>
+</BaseLayout>

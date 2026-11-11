@@ -1,0 +1,411 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import site from "../data/site.json";
+import Sidebar from "../components/Sidebar.astro";
+import { getCollection } from "astro:content";
+
+const homeSidebarLinks = [{ label: "404", href: "#" }];
+
+// Every page on the site, so the browser can suggest the closest matches to the missing URL.
+const docs = await getCollection("docs");
+const posts = await getCollection("blog");
+const pages = [
+  { title: "Home", href: "/", section: "Site" },
+  { title: "Docs", href: "/docs/", section: "Site" },
+  { title: "Blog", href: "/blog/", section: "Site" },
+  ...docs.map((d) => ({ title: d.data.title, href: `/docs/${d.id}/`, section: d.data.section })),
+  ...posts.map((p) => ({ title: p.data.title, href: `/blog/${p.id}/`, section: "Blog" })),
+];
+// "<" is escaped so a title can never close the script tag.
+const pageIndex = JSON.stringify(pages).replace(/</g, "\\u003c");
+---
+
+<BaseLayout
+  pageTitle="404"
+  description={`Page not found — ${site.title}`}
+  bodyClass="docs-shell-body"
+>
+  <Sidebar
+    rootPrefix="/"
+    currentPage="404"
+    sidebarLinks={homeSidebarLinks}
+    sidebarSectionLabel="Explore"
+    site={site}
+  />
+
+  <main class="docs-main">
+    <div class="nf" id="page-content" data-animate="blur">
+      <svg
+        class="nf-art"
+        viewBox="0 0 360 96"
+        role="img"
+        aria-label="The link between the panel and the node is broken"
+      >
+        <g class="nf-box">
+          <rect x="4" y="18" width="84" height="60" rx="8"></rect>
+          <path d="M18 36h56M18 48h56M18 60h34"></path>
+        </g>
+        <g class="nf-box">
+          <rect x="272" y="18" width="84" height="60" rx="8"></rect>
+          <rect x="300" y="36" width="28" height="24" rx="4"></rect>
+        </g>
+        <path class="nf-wire nf-wire--live" d="M92 48H162"></path>
+        <path class="nf-wire nf-wire--dead" d="M198 48H268"></path>
+        <path class="nf-x" d="M172 38l16 20M188 38l-16 20"></path>
+        <circle class="nf-packet" cx="92" cy="48" r="3.5"></circle>
+      </svg>
+
+      <p class="nf-tag">404 / ROUTE_MISSING</p>
+      <p class="nf-big" aria-hidden="true" data-text="404">404</p>
+      <h1>This route isn't registered.</h1>
+      <p class="nf-copy">
+        The page you asked for doesn't exist, or it moved. The panel and every
+        node behind it are fine, so pick up from one of the places below.
+      </p>
+
+      <div class="nf-actions">
+        <a href="/" class="btn-primary">
+          Back to home
+          <iconify-icon icon="lucide:arrow-right" width="16" height="16"></iconify-icon>
+        </a>
+        <a href="/docs/" class="btn-secondary">Read the docs</a>
+        <a href="/blog/" class="btn-secondary">Blog</a>
+        <button type="button" class="btn-secondary" id="nf-back">Go back</button>
+      </div>
+
+      <div class="nf-suggest" id="nf-suggest" hidden>
+        <p class="nf-suggest-title">Did you mean</p>
+        <ul id="nf-suggest-list"></ul>
+      </div>
+
+      <div class="nf-term"><code><span class="nf-prompt">$</span> curl -I <span id="not-found-path">/</span>
+HTTP/1.1 <span class="nf-status">404 Not Found</span></code></div>
+    </div>
+  </main>
+
+  <script type="application/json" id="nf-index" set:html={pageIndex} />
+
+  <script is:inline>
+    (function () {
+      var path = window.location.pathname || "/";
+      document.getElementById("not-found-path").textContent = path;
+
+      var back = document.getElementById("nf-back");
+      back.addEventListener("click", function () {
+        if (window.history.length > 1) window.history.back();
+        else window.location.href = "/";
+      });
+
+      // Suggest the pages whose URL or title share words with the missing URL.
+      var pages = [];
+      try {
+        pages = JSON.parse(document.getElementById("nf-index").textContent);
+      } catch (e) {
+        return;
+      }
+      var decoded = path;
+      try {
+        decoded = decodeURIComponent(path);
+      } catch (e) {}
+      var words = decoded
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter(function (w) {
+          return w.length >= 3;
+        });
+      if (!words.length) return;
+
+      var scored = pages
+        .map(function (page) {
+          var hrefWords = page.href.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+          var title = page.title.toLowerCase();
+          var score = 0;
+          words.forEach(function (w) {
+            if (hrefWords.indexOf(w) > -1) score += 3;
+            else if (
+              w.length >= 4 &&
+              hrefWords.some(function (h) {
+                return h.length >= 4 && (h.indexOf(w) > -1 || w.indexOf(h) > -1);
+              })
+            )
+              score += 2;
+            if (title.indexOf(w) > -1) score += 1;
+          });
+          return { page: page, score: score };
+        })
+        .filter(function (x) {
+          return x.score > 0 && x.page.href !== "/";
+        })
+        .sort(function (a, b) {
+          return b.score - a.score;
+        })
+        .slice(0, 3);
+      if (!scored.length) return;
+
+      var list = document.getElementById("nf-suggest-list");
+      scored.forEach(function (x) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = x.page.href;
+        a.textContent = x.page.title;
+        var small = document.createElement("span");
+        small.textContent = x.page.section;
+        a.appendChild(small);
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+      document.getElementById("nf-suggest").hidden = false;
+    })();
+  </script>
+</BaseLayout>
+
+<style is:global>
+  .nf {
+    min-height: 100vh;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 60px 72px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .nf-art {
+    width: min(360px, 100%);
+    height: auto;
+    margin: 0 0 26px;
+    color: var(--color-text-3);
+    overflow: visible;
+  }
+  .nf-box rect,
+  .nf-box path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+  .nf-wire {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+  .nf-wire--live {
+    stroke-dasharray: 4 5;
+    animation: nf-flow 1s linear infinite;
+  }
+  .nf-wire--dead {
+    opacity: 0.35;
+    stroke-dasharray: 2 6;
+  }
+  .nf-x {
+    fill: none;
+    stroke: var(--color-text-1);
+    stroke-width: 2;
+    stroke-linecap: round;
+    animation: nf-flicker 3.2s steps(1) infinite;
+  }
+  .nf-packet {
+    fill: var(--color-text-1);
+    animation: nf-packet 3.2s ease-in infinite;
+  }
+  .nf-tag {
+    margin: 0 0 6px;
+    color: var(--color-text-2);
+    font: 11px var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+  .nf-big {
+    position: relative;
+    margin: 0 0 4px;
+    font-size: clamp(84px, 16vw, 150px);
+    font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--color-text-1);
+    user-select: none;
+  }
+  .nf-big::before,
+  .nf-big::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    -webkit-text-stroke: 1.5px var(--color-text-1);
+    clip-path: inset(0 0 100% 0);
+    animation: nf-glitch 4.5s steps(1) infinite;
+  }
+  .nf-big::after {
+    animation-delay: 0.25s;
+    animation-direction: reverse;
+  }
+  .nf h1 {
+    margin: 10px 0 0;
+    color: var(--color-text-1);
+    font-size: clamp(26px, 3.2vw, 38px);
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+  }
+  .nf-copy {
+    max-width: 520px;
+    margin: 14px 0 26px;
+    color: var(--color-text-2);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  .nf-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .nf-actions button {
+    cursor: pointer;
+    font: inherit;
+  }
+  .nf-suggest {
+    margin-top: 30px;
+    width: 100%;
+  }
+  .nf-suggest[hidden] {
+    display: none;
+  }
+  .nf-suggest-title {
+    margin: 0 0 8px;
+    color: var(--color-text-4);
+    font: 11px var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .nf-suggest ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+  }
+  .nf-suggest a {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: var(--color-text-1);
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .nf-suggest a:hover {
+    background: var(--hover-bg);
+    color: var(--hover-text);
+  }
+  .nf-suggest a span {
+    color: var(--color-text-4);
+    font: 11px var(--font-mono);
+  }
+  .nf-term {
+    margin: 34px 0 0;
+    max-width: 100%;
+    padding: 12px 14px;
+    background: var(--color-bg-2);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow-x: auto;
+    font: 12px/1.7 var(--font-mono);
+    color: var(--color-text-3);
+  }
+  .nf-term code {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: inherit;
+    white-space: pre;
+  }
+  .nf-prompt {
+    color: var(--color-text-4);
+  }
+  .nf-status {
+    color: var(--color-text-1);
+  }
+  @keyframes nf-flow {
+    to {
+      stroke-dashoffset: -9;
+    }
+  }
+  /* A packet leaves the panel, reaches the break, blinks out. */
+  @keyframes nf-packet {
+    0% {
+      transform: translateX(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    55% {
+      transform: translateX(68px);
+      opacity: 1;
+    }
+    62% {
+      transform: translateX(70px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(70px);
+      opacity: 0;
+    }
+  }
+  @keyframes nf-flicker {
+    0%,
+    55%,
+    100% {
+      opacity: 1;
+    }
+    60% {
+      opacity: 0.2;
+    }
+    66% {
+      opacity: 1;
+    }
+    72% {
+      opacity: 0.2;
+    }
+  }
+  @keyframes nf-glitch {
+    0%,
+    88%,
+    100% {
+      clip-path: inset(0 0 100% 0);
+      transform: none;
+    }
+    90% {
+      clip-path: inset(18% 0 52% 0);
+      transform: translateX(-6px);
+    }
+    93% {
+      clip-path: inset(60% 0 12% 0);
+      transform: translateX(6px);
+    }
+    96% {
+      clip-path: inset(34% 0 38% 0);
+      transform: translateX(-3px);
+    }
+  }
+  @media (max-width: 860px) {
+    .nf {
+      padding: 48px 24px 110px;
+      min-height: 100svh;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nf-wire--live,
+    .nf-x,
+    .nf-packet,
+    .nf-big::before,
+    .nf-big::after {
+      animation: none;
+    }
+    .nf-packet {
+      opacity: 0;
+    }
+  }
+</style>

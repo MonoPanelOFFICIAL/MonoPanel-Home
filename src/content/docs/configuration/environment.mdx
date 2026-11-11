@@ -1,0 +1,32 @@
+---
+title: "Environment Variables"
+description: "Every panel variable in .env."
+section: "Configuration"
+order: 50
+---
+
+Copy `.env.example` to `.env` and edit it. The daemon has its own variables, see [Daemon overview](/docs/daemon/overview/).
+
+| Variable | Required | Description |
+|---|:-:|---|
+| `DATABASE_URL` | Yes | `postgres://user:pass@host:5432/db`. The panel will not start without it. |
+| `DATABASE_SSL` | No | `disable`, `require`, `verify` or `no-verify`. Empty means whatever `?sslmode=` in the URL says. Managed databases usually need `require`. |
+| `DATABASE_SSL_CA` | No | Path to your provider's CA certificate, if it is not publicly trusted. |
+| `DATABASE_POOL_MAX` | No | Connection pool size. Default `5`. |
+| `DATABASE_TABLE_PREFIX` | No | Table prefix. Default `mp_`. |
+| `JWT_SECRET` | No | Signs login tokens. Leave empty to auto-generate (stored in `data/.jwt_secret`). Short or placeholder values are rejected. |
+| `APP_SECRET` | No | Encrypts secrets stored in the database. Leave empty to auto-generate (`data/.app_secret`) and back it up. |
+| `MONOPANEL_ADMIN_EMAIL` | No | Email of the first super admin. Default `admin@monopanel.com`. |
+| `MONOPANEL_ADMIN_PASSWORD` | No | Password of the first super admin. Default `MonoPanelOPP`. Change it after first login. |
+| `MONOPANEL_INSTALLATION_ID` | No | Identity of this installation. Generated once if empty. |
+| `APP_URL` | In production | Public site URL, used for redirects, the webhook URL shown in Admin and OAuth callbacks. |
+| `ALLOWED_ORIGINS` | In production | Comma-separated list of allowed CORS origins. |
+| `TRUST_PROXY` | No | Number of reverse proxy hops to trust, or `false`. Default `1` in production and `0` in development. |
+| `VPN_CHECK_API_KEY` | No | Key for the VPN and proxy detection provider. |
+| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI` | No | Enable Discord OAuth sign-in. |
+| `DISCORD_BOT_TOKEN` | No | Enables the Discord bot integration. |
+| `VITE_FIREBASE_*` | No | Firebase web app credentials for Google sign-in. |
+| `DB_HOST_ADDRESS`, `DB_HOST_PORT`, `DB_HOST_ADMIN_USER`, `DB_HOST_ADMIN_PASSWORD` | No | MySQL or MariaDB host used by each server's Databases tab. Leave `DB_HOST_ADDRESS` empty to hide database creation. |
+| `DB_HOST_PUBLIC_ADDRESS`, `DB_HOST_PUBLIC_PORT` | No | Address customers should connect to. Defaults to the host values above. |
+| `PORT` | No | HTTP port. Default `3000`. |
+| `NODE_ENV` | No | `development` or `production`. |

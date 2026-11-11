@@ -1,0 +1,76 @@
+name: Build and deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10"
+  # Public URL of the site (used for /installer.sh, the install command and canonical URLs).
+  # Set a repository variable named SITE_URL (Settings > Secrets and variables > Actions > Variables)
+  # if you use a custom domain; otherwise the GitHub Pages address below is used.
+  SITE_URL: ${{ vars.SITE_URL || 'https://monopanelofficial.github.io' }}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build site
+        run: pnpm astro build
+        env:
+          NODE_ENV: production
+
+      - name: Verify build output
+        run: |
+          test -d dist || { echo "::error::dist/ was not created"; exit 1; }
+          echo "HTML pages: $(find dist -name '*.html' | wc -l)"
+          test -s dist/index.html || { echo "::error::dist/index.html was not created"; exit 1; }
+          test -s dist/installer.sh || { echo "::error::dist/installer.sh was not created"; exit 1; }
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

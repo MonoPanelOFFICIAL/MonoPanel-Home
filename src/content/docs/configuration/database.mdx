@@ -1,0 +1,52 @@
+---
+title: "PostgreSQL"
+description: "How the panel and the daemon use PostgreSQL, and how to back it up."
+section: "Configuration"
+order: 51
+---
+
+MonoPanel stores everything in PostgreSQL 12 or newer, the same way Pterodactyl and Jexactyl need their database. There is no embedded SQLite mode and no JSON database file, in the panel or in the daemon.
+
+## Panel setup
+
+```sql
+CREATE USER monopanel WITH PASSWORD 'change-me';
+CREATE DATABASE monopanel OWNER monopanel;
+```
+
+Set `DATABASE_URL` in `.env` and start the panel. Tables (`mp_docs`, `mp_maps`, `mp_kv` and `mp_meta`) are created automatically.
+
+## Daemon setup
+
+Each daemon needs its own database, or its own `DATABASE_TABLE_PREFIX`:
+
+```sql
+CREATE USER daemon WITH PASSWORD 'change-me';
+CREATE DATABASE monopanel_daemon OWNER daemon;
+```
+
+The daemon creates `daemon_servers`, `daemon_installs`, `daemon_recycle` and `daemon_meta`. See [Daemon state](/docs/daemon/state/).
+
+## Rules
+
+- Only one panel process may use a database. It keeps its working set in memory, and a session-level advisory lock refuses a second process on purpose.
+- With PgBouncer, connect the panel directly or use session pooling. Transaction pooling cannot hold that lock.
+- Every save is a single transaction that writes only the changed rows. If the database is unreachable, writes retry every 5 seconds and nothing is lost while the panel stays up.
+
+## Backups
+
+**Admin → Hosting → Database → Back up** runs `pg_dump` and saves a compressed `.sql.gz` in `data/backups/`. It needs the `postgresql-client` package on the panel machine. For production also use WAL archiving, point-in-time recovery or your provider's snapshots.
+
+To restore, stop the panel and run:
+
+```bash
+gunzip -c data/backups/<file>.sql.gz | psql "$DATABASE_URL"
+```
+
+To see which database is in use and what is in it, stop the panel and run:
+
+```bash
+npm run db:info
+```
+
+Never commit `.env` or any database dump.

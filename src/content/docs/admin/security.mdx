@@ -1,0 +1,35 @@
+---
+title: "Security"
+description: "The checklist and the protections built into the panel."
+section: "Administration"
+order: 32
+---
+
+## Checklist
+
+- Set a long random `JWT_SECRET`.
+- Change the default admin password (`MonoPanelOPP`) right after first login, or set your own `MONOPANEL_ADMIN_EMAIL` and `MONOPANEL_ADMIN_PASSWORD`.
+- Serve over HTTPS and set `APP_URL` and `ALLOWED_ORIGINS` to your real domain.
+- Set `TRUST_PROXY=false` if you are not behind a reverse proxy, or the correct hop count if you are.
+- Make sure `.env` and `data/` are git-ignored and never committed.
+- Back up the database on a schedule.
+- Verify every manual payment before approving credits.
+- Set `ALLOWED_IPS` on every daemon to the panel's IP.
+
+## Built in
+
+| Protection | Detail |
+|---|---|
+| Sessions | JSON Web Tokens, with passwords hashed using bcryptjs. |
+| Roles | `user`, `support`, `moderator`, `admin` and `super_admin`, enforced on the server. See [Roles & permissions](/docs/admin/roles-and-permissions/). |
+| Rate limits | 240 API requests per minute per IP. Sign-in and account endpoints allow 30 attempts per 5 minutes. API keys allow 60 requests per minute each. The console allows 20 connections per minute per user. |
+| CORS | Only origins in `ALLOWED_ORIGINS` are allowed. |
+| Secrets at rest | Node secrets and Stripe keys are encrypted with AES-256-GCM using `APP_SECRET`. SFTP passwords are stored as scrypt hashes. |
+| Anti-abuse | Optional VPN and proxy blocking through an IP risk provider (`VPN_CHECK_API_KEY`), plus IP bans. |
+| Webhooks | HMAC-SHA256 signed, and the target must resolve to public addresses only. The resolved address is pinned for the request. |
+| Daemon link | Every request is signed with a timestamp and a single-use nonce. See [Daemon security](/docs/daemon/security/). |
+| Audit trail | Admin actions and API key activity are logged under **Admin → Audit Trail**. |
+
+## Payments
+
+Manual payments (UPI, bank transfer, crypto and gift cards) are verified by staff before credits are added, so nothing is granted on trust. Stripe card payments are only credited after Stripe's signed webhook is verified, and the Stripe keys are stored encrypted with AES-256-GCM.

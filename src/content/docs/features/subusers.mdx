@@ -1,0 +1,18 @@
+---
+title: "Team Access"
+description: "Share a server and grant only the permissions people need."
+section: "Features"
+order: 16
+---
+
+A server's owner can add other accounts to it and choose which of ten permissions each one gets:
+
+`console.read`, `console.command`, `power`, `files.read`, `files.write`, `backups`, `schedules`, `addons`, `sftp` and `settings`.
+
+The permission list is documented in [Roles & permissions](/docs/admin/roles-and-permissions/).
+
+## Plan requirement
+
+Team access only works while the owner's plan includes sub-users. If the plan lapses, team members silently lose access, and it returns when the plan does. The number of team members per server is the plan's `subusers` limit.
+
+Shared servers appear in the team member's own server list, marked as shared rather than owned.
