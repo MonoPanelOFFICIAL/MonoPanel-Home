@@ -29,7 +29,7 @@
 #==============================================================================
 set -euo pipefail
 
-DOWNLOAD_BASE="${MONOPANEL_INSTALLER_DL:-https://github.com/TeamMonoPanel/MonoPanel-Installer/releases/download/latest-build}"
+DOWNLOAD_BASE="${MONOPANEL_INSTALLER_DL:-https://github.com/MonoPanelOFFICIAL/MonoPanel-Installer/releases/download/latest-build}"
 SELF_NAME="monopanel-installer"
 
 say()  { printf '\033[1;36m::\033[0m %s\n' "$*"; }
@@ -154,7 +154,7 @@ if ! fetch_url "$ASSET_URL" "$BIN"; then
     FETCHED="${BIN}.gz"
     say "no plain asset - trying ${ASSET}.gz"
     fetch_url "$FETCH_URL" "$FETCHED" || die "download failed: $ASSET_URL
-(no binary for this platform, or the release is missing - check github.com/TeamMonoPanel/MonoPanel-Installer/actions)"
+(no binary for this platform, or the release is missing - check github.com/MonoPanelOFFICIAL/MonoPanel-Installer/actions)"
 fi
 
 # checksum when CI published one; absence of tool or sidecar is never fatal
