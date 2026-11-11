@@ -9,10 +9,12 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "dev:netlify": "netlify dev",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.0.0",
+    "@netlify/blobs": "^11.1.9",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.1",
     "tailwindcss": "^4.3.3"

@@ -6,6 +6,7 @@ import "../styles/layout.css";
 import "../styles/prose.css";
 import "../styles/components.css";
 import "../styles/sections.css";
+import "../styles/responsive.css";
 import Head from "../components/Head.astro";
 import Nav from "../components/Nav.astro";
 import Loader from "../components/Loader.astro";
@@ -47,5 +48,6 @@ const { title, description } = Astro.props;
   .docs-shell {
     display: flex;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 </style>

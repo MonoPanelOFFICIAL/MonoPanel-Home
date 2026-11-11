@@ -1,0 +1,339 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   Responsive fixes — loaded LAST by both layouts so it wins over older rules.
+
+   What this fixes on phones and tablets:
+   - Padding that stacked up (page + hero layout + hero = 64px each side), which squeezed
+     the homepage into a ~250px column.
+   - Grid and flex children that refused to shrink (install steps and code blocks were wider
+     than the screen and got clipped on the right).
+   - Sections that added their own side padding on top of the page padding.
+   - 100vh heights that jump when the mobile address bar shows and hides.
+   - Tiny text, tiny tap targets, and inputs under 16px that make iOS zoom on focus.
+   Sticky hover on touch is handled at build time by src/lib/postcss-hover-only.mjs.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Safety net for every device ──────────────────────────────────────────── */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: 16px;
+}
+body {
+  min-width: 0;
+  overflow-x: clip;
+}
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+svg {
+  max-width: 100%;
+}
+/* Anything that sits in a grid or flex row may shrink below its content width. */
+.hub-section > *,
+.install-layout > *,
+.install-steps,
+.install-step,
+.install-panel,
+.install-oneline,
+.project-cards > *,
+.docs-main,
+.docs-content,
+.hub-content,
+.prose,
+.prose > * {
+  min-width: 0;
+}
+.install-layout,
+.install-steps,
+.install-step {
+  grid-template-columns: minmax(0, 1fr);
+}
+.install-step > *,
+.install-oneline > *,
+.prose-code-block {
+  min-width: 0;
+  max-width: 100%;
+}
+.project-cards {
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+}
+pre,
+.prose-code-block,
+.table-wrapper {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.prose a,
+.prose code,
+.docs-content p code,
+.install-note code,
+.requirements-list code {
+  overflow-wrap: anywhere;
+}
+#page-content {
+  overflow-x: clip;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.docs-shell,
+.hero-viewport {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ── Tablet and below: the sidebar is gone, the bottom bar is the navigation ─ */
+@media (max-width: 860px) {
+  .hub-content,
+  #page-content.hub-content {
+    padding-left: clamp(16px, 5vw, 32px);
+    padding-right: clamp(16px, 5vw, 32px);
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    max-width: 100%;
+  }
+
+  /* The hub content already has side padding, so sections and the hero add none. */
+  .hub-section {
+    padding: 48px 0;
+  }
+  .hub-section--last {
+    padding-bottom: 72px;
+  }
+  .hero-viewport {
+    min-height: auto;
+    align-items: flex-start;
+    padding: 28px 0 40px;
+  }
+  .hero-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding: 0;
+    max-width: 640px;
+    margin-inline: auto;
+  }
+  .hub-hero {
+    padding: 0;
+  }
+  .hub-hero h1 {
+    font-size: clamp(36px, 10.4vw, 56px);
+    line-height: 1.02;
+    margin-bottom: 18px;
+  }
+  .hub-lede {
+    max-width: none;
+    font-size: 15.5px;
+  }
+  .hub-overline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-bottom: 18px;
+    font-size: 11px;
+  }
+  .hub-actions {
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .hub-section-heading,
+  .hub-section-heading--split {
+    max-width: none;
+  }
+  .hub-section-heading--split {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  /* Docs and blog pages */
+  .docs-main,
+  .site-main {
+    margin-left: 0;
+    width: 100%;
+  }
+  .docs-content {
+    padding-left: clamp(16px, 5vw, 32px);
+    padding-right: clamp(16px, 5vw, 32px);
+    padding-top: 24px;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    max-width: 100%;
+  }
+
+  /* Cards that sat in uneven columns */
+  .about-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+    align-items: stretch;
+  }
+  .about-card {
+    height: 100%;
+  }
+  .install-layout {
+    gap: 20px;
+  }
+}
+
+/* ── Phones ───────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  #page-content,
+  #page-content.hub-content {
+    padding-left: clamp(16px, 5vw, 24px) !important;
+    padding-right: clamp(16px, 5vw, 24px) !important;
+  }
+  #page-content.hub-content {
+    padding-top: 0 !important;
+  }
+
+  /* Buttons: full width, easy to tap */
+  .hub-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hub-actions .btn-primary,
+  .hub-actions .btn-secondary {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+  }
+  .install-options {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Install block: wrap and scroll instead of getting clipped */
+  .install-tabs {
+    flex-wrap: wrap;
+  }
+  .install-tab {
+    min-height: 40px;
+  }
+  .install-oneline pre,
+  .install-step pre {
+    padding: 12px 14px;
+    font-size: 12.5px;
+  }
+  .install-step h3 {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .requirements-list {
+    font-size: 14px;
+    padding-left: 0;
+    list-style: none;
+  }
+  /* Show the whole one-line install command on a phone instead of a sideways scroll */
+  .install-oneline pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .install-note,
+  .install-note code,
+  .requirements-list code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* Reading text */
+  .prose,
+  .docs-content p,
+  .docs-content li {
+    font-size: 15.5px;
+    line-height: 1.7;
+  }
+  .docs-content h1 {
+    font-size: clamp(26px, 8vw, 34px);
+    line-height: 1.15;
+  }
+  .prose pre,
+  .prose-code-block pre {
+    font-size: 12.5px;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* iOS zooms the page when a focused input is under 16px */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  .docs-search {
+    min-height: 46px;
+  }
+
+  /* List rows and cards: bigger tap area, no cramped meta */
+  .docs-list-row,
+  .hub-list-row {
+    min-height: 56px;
+  }
+  .hub-section-heading h2 {
+    font-size: clamp(24px, 7vw, 30px);
+  }
+  .feature-showcase-row {
+    padding: 24px 0;
+  }
+
+  /* Bottom bar: easier targets */
+  #mobile-bar .mob-item,
+  #mobile-bar #mob-menu-btn {
+    min-height: 56px;
+  }
+}
+
+/* ── Small phones ─────────────────────────────────────────────────────────── */
+@media (max-width: 380px) {
+  .hub-hero h1 {
+    font-size: clamp(30px, 9.6vw, 36px);
+  }
+  .hub-lede {
+    font-size: 15px;
+  }
+  .about-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .stable-badge {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
+
+/* ── Touch screens of any width ───────────────────────────────────────────── */
+@media (pointer: coarse) {
+  .btn-primary,
+  .btn-secondary,
+  .text-link {
+    min-height: 44px;
+  }
+  .prose-copy-btn {
+    min-height: 32px;
+    min-width: 44px;
+  }
+  .docs-search kbd,
+  #blog-search-kbd {
+    display: none;
+  }
+}
+
+/* ── Landscape phones: keep the hero from filling more than the screen ────── */
+@media (max-height: 480px) and (orientation: landscape) {
+  .hero-viewport {
+    min-height: auto;
+    padding: 24px 0;
+  }
+  #mobile-bar .mob-item,
+  #mobile-bar #mob-menu-btn {
+    min-height: 44px;
+  }
+}
+
+/* ── Large screens: stop lines running too long ───────────────────────────── */
+@media (min-width: 1800px) {
+  .hub-content {
+    max-width: 1500px;
+  }
+}

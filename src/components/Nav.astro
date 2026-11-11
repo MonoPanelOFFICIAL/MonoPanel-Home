@@ -15,8 +15,18 @@ interface Props {
 const { rootPrefix = "/", currentPage = "home" } = Astro.props;
 const site = siteData;
 
+// Work out the active tab from the URL, so the bottom bar highlights the right page
+// even when a layout does not pass `currentPage`.
+const path = Astro.url.pathname;
+const fromPath = path.startsWith("/docs")
+  ? "docs"
+  : path.startsWith("/blog")
+    ? "blog"
+    : path === "/" || path === ""
+      ? "home"
+      : "";
 const page = currentPage.toLowerCase();
-const active = page === "" ? "home" : page;
+const active = fromPath || (page === "" ? "home" : page);
 
 const links: Link[] = [
   { key: "home", href: rootPrefix, label: "Home", icon: "lucide:home" },
