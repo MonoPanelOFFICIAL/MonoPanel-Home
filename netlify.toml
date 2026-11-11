@@ -12,11 +12,8 @@
 [functions]
   node_bundler = "esbuild"
 
-[[redirects]]
-  from = "/admin"
-  to = "/admin/"
-  status = 301
-  force = true
+# No redirect is needed for /admin: Netlify serves public/admin/index.html at /admin/ by itself.
+# A rule that adds or removes a trailing slash makes an infinite redirect loop on Netlify.
 
 # The admin page: never indexed, never framed, and only allowed to load its own scripts.
 [[headers]]
