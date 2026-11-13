@@ -16,7 +16,7 @@ MonoPanel/
 │   ├── discordService.ts    # Discord bot
 │   ├── webhookService.ts    # Outgoing webhooks
 │   ├── daemonLink.ts        # Node secret sharing
-│   ├── hosting/             # Servers, plans, schedules, transfers, addons, daemon client
+│   ├── hosting/             # Servers, plans, schedules, transfers, addons, daemon client, hosting kinds, website domains
 │   ├── vps/                 # VPS service and daemon client
 │   ├── storage/             # PostgreSQL driver and document store
 │   ├── services/            # Request protection, provisioning
@@ -40,6 +40,8 @@ daemon/
 │   ├── auth.ts, safe.ts     # HMAC verification, path safety
 │   ├── config.ts, db.ts, state.ts   # Config and PostgreSQL state
 │   ├── runtime/             # docker, podman and process runtimes
+│   ├── kinds.ts, services.ts # Hosting kinds and their routes (NODE_SERVICES)
+│   ├── lavalink.ts, nodejs.ts, web.ts   # Lavalink config, Node.js tasks, website proxy
 │   ├── vps/                 # VPS runtime and routes
 │   ├── fsops.ts, recycle.ts, backup.ts, transfer.ts, addons.ts
 │   └── sftp*.ts             # SFTP server

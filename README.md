@@ -1,6 +1,6 @@
 # MonoPanel website
 
-The public website and documentation for **MonoPanel** (Katharos V2.0.1, stable): a hosting platform for Discord bot hosting and VPS hosting, made of a panel and a node daemon.
+The public website and documentation for **MonoPanel** (Katharos V2.0.2, stable): a hosting platform for Discord bot, Node.js, website, Lavalink and VPS hosting, made of a panel and a node daemon.
 
 Built with [Astro](https://astro.build) 7, Tailwind CSS 4 and MDX. It is a fully static site.
 

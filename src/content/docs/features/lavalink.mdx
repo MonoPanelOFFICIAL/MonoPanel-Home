@@ -1,0 +1,43 @@
+---
+title: "Lavalink Hosting"
+description: "Lavalink v4 audio nodes for music bots, with a managed config."
+section: "Features"
+order: 28
+---
+
+Lavalink hosting gives customers a ready-to-use Lavalink v4 audio node for their Discord music bot. Switch it on under **Admin → Hosting Types**. The install downloads Lavalink from its official releases, and a random password is generated when the server is created.
+
+## Software
+
+| Setting | Value |
+|---|---|
+| Java | 21 (default) or 17 |
+| Lavalink version | `latest` or a release such as `4.0.8`. Applied on reinstall |
+| Port | `2333` inside the container |
+| Minimum RAM | 384 MB |
+| Password | 8 to 64 characters of letters, digits, `_`, `.` and `-`. The customer can change it, and the server needs a restart afterwards |
+
+## The Lavalink tab
+
+**Connection details.** The host, port, password, version and a ready URL, with copy buttons, so the customer can paste them into their bot.
+
+**Live status.** Whether Lavalink is online, its version, the loaded sources and plugins, the number of players (and how many are playing), uptime, memory, CPU cores and system and Lavalink load. It refreshes by itself every few seconds and never overwrites what the customer is typing.
+
+**Settings.** The panel generates `application.yml` from a validated form, so customers never hand-edit YAML for common cases:
+
+- **Sources:** YouTube, Bandcamp, SoundCloud, Twitch, Vimeo, Niconico, HTTP streams and local files. YouTube and local files start off.
+- **Filters:** volume, equalizer, karaoke, timescale, tremolo, vibrato, distortion, rotation, channel mix and low pass.
+- **Audio and player options:** buffer sizes, Opus encoding quality, resampling quality, track-stuck threshold, seek ghosting, player update interval, YouTube playlist load limit and GC warnings.
+- **Metrics and logging:** the Prometheus metrics endpoint and the log level.
+
+The password and the port are never written into the file. They stay as placeholders that Lavalink reads from the environment the daemon starts it with, so changing the password only needs a restart, and a server moved to another port never keeps a stale value.
+
+**Plugins.** Customers add plugins by their `group:artifact:version` coordinates, with an optional `https://` repository and a snapshot flag, up to 20. Plugin settings go in an **extra YAML** box that is appended to the file. It cannot redefine the `server`, `lavalink`, `metrics` or `logging` blocks. The files Lavalink downloaded into `plugins/` are listed.
+
+**Raw mode.** Advanced customers can switch to editing `application.yml` themselves. The panel then stops claiming to manage the file. **Reset** returns to the managed defaults and keeps nothing of the old file.
+
+Saving a change asks the customer to restart the server to apply it.
+
+## Plans
+
+The panel ships three starter plans (Lavalink Starter, Standard and Pro) that you can edit or replace. See the [daemon's Lavalink tools](/docs/daemon/services/) for the routes behind this tab.

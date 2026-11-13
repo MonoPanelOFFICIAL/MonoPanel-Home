@@ -28,5 +28,6 @@ Copy `.env.example` to `.env` and edit it. The daemon has its own variables, see
 | `VITE_FIREBASE_*` | No | Firebase web app credentials for Google sign-in. |
 | `DB_HOST_ADDRESS`, `DB_HOST_PORT`, `DB_HOST_ADMIN_USER`, `DB_HOST_ADMIN_PASSWORD` | No | MySQL or MariaDB host used by each server's Databases tab. Leave `DB_HOST_ADDRESS` empty to hide database creation. |
 | `DB_HOST_PUBLIC_ADDRESS`, `DB_HOST_PUBLIC_PORT` | No | Address customers should connect to. Defaults to the host values above. |
+| `MONOPANEL_HOSTINGS` | No | Starting selection of hosting types: any of `bot`, `vps`, `website`, `nodejs`, `lavalink`, comma separated. `.env.example` sets all five. Leave it empty to start with `bot,vps`. Once an admin saves a selection under **Admin → Hosting Types**, that choice wins. |
 | `PORT` | No | HTTP port. Default `3000`. |
 | `NODE_ENV` | No | `development` or `production`. |

@@ -5,14 +5,17 @@ section: "Daemon"
 order: 80
 ---
 
-The daemon is one agent per node. It runs customer **servers** (bots, games, apps) and customer **VPSes** for the panel, on one port with one secret. It has no npm runtime dependencies except the PostgreSQL driver, and it works on any kind of machine.
+The daemon is one agent per node. It runs customer **servers** (bots, Node.js apps, websites, Lavalink nodes and games) and customer **VPSes** for the panel, on one port with one secret. It has no npm runtime dependencies except the PostgreSQL driver, and it works on any kind of machine.
 
-| Feature | Needs | Routes |
-|---|---|---|
-| Servers | Nothing (Docker, Podman or the native sandbox) | `/v1/servers/*` |
-| VPSes | Docker CLI | `/v1/vps/*` |
+| Feature | Hosting type | Needs | Routes |
+|---|---|---|---|
+| Servers | Bot, Node.js, Lavalink, Website | Nothing (Docker, Podman or the native sandbox) | `/v1/servers/*` |
+| Lavalink tools | Lavalink | A Lavalink software image | `/v1/servers/:id/lavalink/*` |
+| Node.js tools | Node.js, Website, Bot | A Node.js software image | `/v1/servers/:id/nodejs/*` |
+| Website proxy | Website | Ports 80 and 443 (optional TLS certificates) | Built in, see [Website proxy](/docs/daemon/website-proxy/) |
+| VPSes | VPS | Docker CLI | `/v1/vps/*` |
 
-A node without Docker still runs servers, and VPS routes answer `501` until Docker is installed.
+One daemon runs every hosting type. `NODE_SERVICES` decides which types a node accepts (see [Services on a node](/docs/daemon/services/)), and the panel's **Admin → Hosting Types** decides which types you sell. A node without Docker still runs servers, and VPS routes answer `501` until Docker is installed.
 
 ## Requirements
 
@@ -38,7 +41,7 @@ git clone https://github.com/MonoPanelOFFICIAL/MonoPanel-daemon.git /opt/monopan
 cd /opt/monopanel-daemon && npm install && npm run build && npm run configure -- --panel <panel-url> --key <secret> --port 3002 --allow <panel-ip> --database <postgres-url> && npm start
 ```
 
-`configure` writes `.env` with mode 600. Add `--vps docker|auto|mock|off` to set `VPS_RUNTIME`, `--sftp 2022` to enable SFTP, and `--database <url>` to set `DATABASE_URL`. If you register the same address as a server node and a VPS node, the panel uses one shared secret, so you configure the daemon once. Keep the secret private, and rotate it from the panel at any time.
+`configure` writes `.env` with mode 600. Add `--vps docker|auto|mock|off` to set `VPS_RUNTIME`, `--sftp 2022` to enable SFTP, `--database <url>` to set `DATABASE_URL`, `--services nodejs,lavalink` (any of `bot,nodejs,website,lavalink,vps`) to limit what the node accepts, and `--web-http 80 --web-https 443 [--cert-dir /etc/letsencrypt/live]` for website hosting. If you register the same address as a server node and a VPS node, the panel uses one shared secret, so you configure the daemon once. Keep the secret private, and rotate it from the panel at any time.
 
 ## Configuration
 
@@ -53,7 +56,11 @@ cd /opt/monopanel-daemon && npm install && npm run build && npm run configure --
 | `DATA_DIR`, `VOLUMES_DIR`, `BACKUPS_DIR` | `./data` and below | Where files are stored |
 | `PORT_MIN`, `PORT_MAX` | `20000`, `40000` | Host ports servers may bind |
 | `CONTAINER_UID`, `CONTAINER_GID` | `1000` | Owner of volume files |
+| `NODE_SERVICES` | all | Hosting types this node accepts: `bot`, `nodejs`, `website`, `lavalink`, `vps`. Empty means all |
+| `WEB_HTTP_PORT`, `WEB_HTTPS_PORT` | `0` | Website proxy ports. `0` is off. See [Website proxy](/docs/daemon/website-proxy/) |
 | `SFTP_PORT` | `0` | `0` disables SFTP |
 | `MAX_TRANSFER_MB` | `20480` | Largest server accepted from another node |
 
-The daemon refuses to start with a missing or weak secret, a bad port range or a missing database URL. See [Runtimes](/docs/daemon/runtimes/), [VPS](/docs/daemon/vps/) and [State](/docs/daemon/state/) for the other settings.
+**Updating:** pull or copy the new daemon files and run the same command again. `configure` keeps your existing `.env` values and only changes what you pass. Database changes are additive and applied on start, so running servers are not touched.
+
+The daemon refuses to start with a missing or weak secret, a bad port range, a missing database URL or an unknown name in `NODE_SERVICES`. See [Runtimes](/docs/daemon/runtimes/), [VPS](/docs/daemon/vps/) and [State](/docs/daemon/state/) for the other settings.

@@ -5,25 +5,28 @@ section: "Project"
 order: 1
 ---
 
-MonoPanel is a full-stack platform for running a hosting business. One repository gives you a public website, customer accounts, a billing and order system, a support desk, an in-dashboard mail inbox and a complete admin panel. A separate lightweight daemon runs on every node and does the work of hosting customer servers and VPSes.
+MonoPanel is a full-stack platform for running a hosting business. One repository gives you a public website, customer accounts, a billing and order system, a support desk, an in-dashboard mail inbox and a complete admin panel. A separate lightweight daemon runs on every node and does the work of hosting customer servers, websites, Lavalink nodes and VPSes.
 
 ## Current release
 
-The current release is **Katharos V2.0.1**, a **stable** release.
+The current release is **Katharos V2.0.2**, a **stable** release. It is [Update 1](/blog/katharos-v2-0-2/) and adds three new hosting types.
 
 ## What it sells
 
-MonoPanel sells two products, and both are priced from the plans you define in the admin panel:
+MonoPanel can sell up to five kinds of hosting, all priced from the plans you define in the admin panel. You choose which ones you sell under **Admin → Hosting Types** (see [Hosting types](/docs/features/hosting-types/)):
 
 - **Discord bot hosting.** Customers create always-on servers from the software you offer. Node.js, Python, a static website and Minecraft (Paper) ship by default, and you can add more.
 - **VPS hosting.** Customers get a VPS with root access over SSH. Ubuntu 22.04, Ubuntu 24.04 and Debian 12 are available out of the box.
+- **Website hosting.** Full-stack sites with a free subdomain, custom domains and HTTPS. See [Website hosting](/docs/features/websites/).
+- **Node.js hosting.** Node 20, 22 and 24 apps with install and build tasks. See [Node.js hosting](/docs/features/nodejs/).
+- **Lavalink hosting.** Lavalink v4 nodes with a generated config and plugins. See [Lavalink hosting](/docs/features/lavalink/).
 
 ## The two parts
 
 | Part | Job |
 |---|---|
 | **Panel** | The website, accounts, billing, support and admin panel. Written in TypeScript with React 19, Vite 6, Tailwind 4 and an Express 4 API. |
-| **Daemon** | One agent per node. It runs customer servers (Docker, Podman or a native sandbox) and customer VPSes (Docker). It has no npm runtime dependencies besides the PostgreSQL driver. |
+| **Daemon** | One agent per node. It runs customer servers (bots, Node.js, websites and Lavalink, on Docker, Podman or a native sandbox) and customer VPSes (Docker). It has no npm runtime dependencies besides the PostgreSQL driver. |
 
 The panel never touches customer machines directly. It only sends signed requests to the daemon on each node, and both parts keep their state in PostgreSQL.
 

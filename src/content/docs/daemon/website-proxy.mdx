@@ -1,0 +1,45 @@
+---
+title: "Website Proxy"
+description: "The daemon's built-in reverse proxy for website hosting."
+section: "Daemon"
+order: 90
+---
+
+Website servers get a small, dependency-free reverse proxy built into the daemon. A request for `shop.example.com` arrives on the proxy's port, the daemon looks the `Host` header up and forwards the request to the customer's app on `127.0.0.1`, websockets included.
+
+The panel decides which domains belong to which server. It verifies the DNS first and pushes the list to the daemon in the server's definition, so the proxy only serves domains it was told about. See [Website hosting](/docs/features/websites/).
+
+## Turning it on
+
+The proxy is off until you set `WEB_HTTP_PORT` or `WEB_HTTPS_PORT`, because ports 80 and 443 are usually owned by something else. If you already run Caddy, nginx or a Cloudflare Tunnel, leave it off and point that proxy at each site's port instead.
+
+```bash
+npm run configure -- --panel <panel-url> --key <secret> --web-http 80 --web-https 443 --cert-dir /etc/letsencrypt/live
+```
+
+Ports below 1024 need root or permission to bind them, for example `setcap 'cap_net_bind_service=+ep' $(which node)`.
+
+| Variable | Meaning |
+|---|---|
+| `WEB_HTTP_PORT`, `WEB_HTTPS_PORT` | `0` is off. Typical values are `80` and `443` |
+| `WEB_HOST` | Address the proxy listens on. Default `0.0.0.0` |
+| `WEB_CERT_DIR` | A folder holding `<domain>/fullchain.pem` and `<domain>/privkey.pem`. certbot's `/etc/letsencrypt/live` works as it is. Certificates are picked by the domain the visitor asked for. A folder called `_wildcard.<parent domain>` serves every subdomain of that parent |
+| `WEB_ACME_DIR` | Webroot for certbot challenges: `certbot certonly --webroot -w <dir> -d example.com`. Files are served from `/.well-known/acme-challenge/` on HTTP |
+| `WEB_FORCE_HTTPS` | Redirect HTTP to HTTPS for domains that have a certificate. Default `true` |
+| `WEB_TRUST_PROXY` | IP address(es) of a proxy or CDN in front of the daemon, so its `X-Forwarded-For` is believed. Empty means never |
+
+## What visitors see
+
+| Situation | Response |
+|---|---|
+| The domain is not connected to any website | `404`, "No site here" |
+| The site's server is stopped or still starting | `503`, "This site is offline" |
+| The site is running | The customer's app answers |
+
+## Safety
+
+- The `Host` header is lower-cased, stripped of its port and accepted only when it is a plain DNS name.
+- `X-Forwarded-For`, `X-Forwarded-Proto`, `X-Forwarded-Host` and `X-Real-IP` are never passed on from the visitor. The daemon sets them itself, and it only believes the visitor's forwarded address when the connection comes from a proxy listed in `WEB_TRUST_PROXY`.
+- Hop-by-hop headers are dropped, except the ones a websocket upgrade needs.
+
+`GET /v1/services` and `GET /v1/servers/:id/web` report the proxy status, the number of domains and the number of certificates it has loaded.

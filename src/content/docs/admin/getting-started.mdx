@@ -70,8 +70,12 @@ On first start the panel creates a super admin account. Use the email and passwo
 
 ## 5. Add a node
 
-Open **Admin → Nodes** to host servers or **Admin → VPS Nodes** to host VPSes, and add the node. The panel shows the exact command to run on the node, with the secret filled in. See [Daemon overview](/docs/daemon/overview/). If you register the same address in both places, the panel uses one shared secret, so you configure the daemon once.
+Open **Admin → Nodes** to host servers (bots, Node.js, websites and Lavalink) or **Admin → VPS Nodes** to host VPSes, and add the node. Tick the services the node should serve, or leave them all off for every type. The panel shows the exact command to run on the node, with the secret filled in. See [Daemon overview](/docs/daemon/overview/). If you register the same address in both places, the panel uses one shared secret, so you configure the daemon once.
 
-## 6. Define what you sell
+## 6. Choose what you sell
 
-Use **Products & Plans** to create plans and **Orders & Billing** to review payments. The public Bot Hosting, VPS Hosting and Pricing pages read their prices and features from these plans.
+Open **Admin → Hosting Types** and tick the hosting types you actually run: bots, VPS, websites, Node.js or Lavalink. Anything you leave off disappears from the whole site. The `.env.example` file starts with all five switched on through `MONOPANEL_HOSTINGS`, and an install without that line keeps selling Bot and VPS only. For website hosting also set the base domain used for free subdomains on the same page. See [Hosting types](/docs/features/hosting-types/).
+
+## 7. Define your plans
+
+Use **Products & Plans** to create plans and **Orders & Billing** to review payments. The public hosting pages and Pricing read their prices and features from these plans. Starter products and plans for Node.js, Website and Lavalink hosting are added once, and you can edit or delete them.

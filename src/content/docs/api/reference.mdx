@@ -22,11 +22,11 @@ Everything lives under `/api/v1/`.
 | `status` | Incidents and maintenance |
 | `api-keys` | REST API keys and webhooks |
 | `admin` | Admin panel operations |
-| `admin/hosting`, `admin/vps`, `admin/manager-bot` | Hosting, VPS and Discord manager bot administration (admin and super admin only) |
+| `admin/hosting`, `admin/vps`, `admin/manager-bot` | Hosting, VPS and Discord manager bot administration (admin and super admin only). `admin/hosting/kinds` reads and saves the enabled hosting types |
 
 Stripe delivers payment events to `POST /api/v1/stripe/webhook`, which verifies Stripe's signature on the raw request body.
 
-Responses are JSON.
+Hosting types that are switched off answer `404` or `403` with the code `HOSTING_DISABLED`. Per-server tools live under `hosting/servers/:id/` (`lavalink`, `nodejs` and `site`). Responses are JSON.
 
 ## API keys and webhooks (`/api/v1/api-keys`)
 

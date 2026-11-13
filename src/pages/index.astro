@@ -29,6 +29,10 @@ const featureIcons: Record<string, string> = {
   files: "lucide:folder-open",
   nodes: "lucide:network",
   vps: "lucide:cpu",
+  kinds: "lucide:shapes",
+  website: "lucide:globe",
+  nodejs: "lucide:hexagon",
+  lavalink: "lucide:music",
   billing: "lucide:wallet",
   support: "lucide:life-buoy",
   subusers: "lucide:users",
@@ -49,7 +53,7 @@ const showcases: Record<string, { title: string; text: string; detail: string }[
   panel: [
     {
       title: "Customer dashboard",
-      text: "Customers sign up with email and password, or with Google or Discord. From one dashboard they create servers and VPSes, open support tickets, read their mail, add credits, redeem coupons and follow their activity log.",
+      text: "Customers sign up with email and password, or with Google or Discord. From one dashboard they create bots, Node.js apps, websites, Lavalink nodes and VPSes, open support tickets, read their mail, add credits, redeem coupons and follow their activity log.",
       detail:
         "Accounts have five roles: user, support, moderator, admin and super admin. Sessions use signed tokens, passwords are hashed, and the API is rate limited with a CORS allow-list. VPN and proxy blocking is optional.",
     },
@@ -61,17 +65,41 @@ const showcases: Record<string, { title: string; text: string; detail: string }[
     },
     {
       title: "Public storefront",
-      text: "Home, Bot Hosting, VPS Hosting and Pricing pages, a status page with incidents and scheduled maintenance, a docs page and editable legal pages. Product cards read prices and features from your real plans.",
+      text: "Home and Pricing pages, a page for each hosting type you sell (Bot, VPS, Website, Node.js and Lavalink), a status page with incidents and scheduled maintenance, a docs page and editable legal pages. Product cards read prices and features from your real plans.",
       detail:
         "Because the storefront reads your live catalogue, what the site shows never drifts from what you actually sell.",
+    },
+    {
+      title: "Hosting Types",
+      text: "Under Admin > Hosting Types you choose which of the five hosting types you provide. Anything you leave off disappears from the home page, pricing, navigation, checkout, the customer panel, the admin menu and the API.",
+      detail:
+        "The change is live for every visitor with no rebuild and no restart, and the server enforces it too, so a hidden type cannot be ordered through the API. A fresh install starts from MONOPANEL_HOSTINGS in .env, and an install without that line keeps selling Bot and VPS only.",
     },
   ],
   daemon: [
     {
       title: "Servers",
-      text: "The daemon runs customer servers in Docker, Podman or, when no container engine exists, a native process sandbox using bubblewrap. Runtime selection is automatic, and gVisor, Kata or Sysbox can be added for stronger isolation.",
+      text: "The daemon runs customer servers (bots, Node.js apps, websites and Lavalink nodes) in Docker, Podman or, when no container engine exists, a native process sandbox using bubblewrap. Runtime selection is automatic, and gVisor, Kata or Sysbox can be added for stronger isolation.",
       detail:
         "Containers drop all capabilities, forbid privilege escalation and are limited in RAM, swap, CPU and process count. The daemon enforces each server's disk quota and confines every file path to the server's own volume.",
+    },
+    {
+      title: "One daemon, every hosting type",
+      text: "A single daemon serves bots, Node.js, websites, Lavalink and VPSes on one port with one secret. NODE_SERVICES (or --services when you configure) limits what a node accepts, so a Lavalink-only node refuses everything else.",
+      detail:
+        "The daemon reports the services it was set up for, and the panel only places a server on a node that serves its type. Updating is the same command again: configure keeps your .env, and database changes are additive.",
+    },
+    {
+      title: "Website proxy",
+      text: "Website servers get a built-in reverse proxy that routes by Host header, websockets included. It serves HTTPS from certbot-style certificates picked by SNI, answers certbot webroot challenges and can redirect HTTP to HTTPS.",
+      detail:
+        "It stays off until you set WEB_HTTP_PORT or WEB_HTTPS_PORT, so Caddy, nginx or a Cloudflare Tunnel can keep ports 80 and 443. The panel verifies custom domains (TXT record or CNAME) and pushes them to the daemon, which only serves domains it was told about and never believes forwarded headers a visitor made up.",
+    },
+    {
+      title: "Node.js and Lavalink tools",
+      text: "Node.js and website servers can read their project (package.json, scripts, framework, Git remote) and run fixed install, build, update and clean tasks. Lavalink servers get a generated application.yml, plugins and a live status from Lavalink itself.",
+      detail:
+        "Tasks run in a throw-away container from the server's own image, and customers pick a task by name, never a command. Lavalink keeps its password and port as placeholders, so changing either only needs a restart.",
     },
     {
       title: "VPSes",
@@ -110,7 +138,7 @@ const showcases: Record<string, { title: string; text: string; detail: string }[
 ---
 
 <BaseLayout
-  description={`${site.title} ${version.label}. Discord bot hosting and VPS hosting platform with a storefront, billing, support desk, admin panel and a lightweight daemon for every node.`}
+  description={`${site.title} ${version.label}. Hosting platform for Discord bots, Node.js apps, websites, Lavalink nodes and VPSes, with a storefront, billing, support desk, admin panel and a lightweight daemon for every node.`}
   bodyClass="docs-shell-body"
 >
   <a href="#page-content" class="skip-link">Skip to main content</a>
@@ -134,7 +162,7 @@ const showcases: Record<string, { title: string; text: string; detail: string }[
           <section class="hub-hero hero-text-animated" data-animate="blur">
             <div>
               <p class="hub-overline">
-                Self-hosted · Bot hosting · VPS hosting
+                Self-hosted · Bots · Node.js · Websites · Lavalink · VPS
                 <span class="stable-badge" aria-label={`${version.channel} release ${version.label}`}>
                   {version.channel} · {version.label}
                 </span>
@@ -142,9 +170,10 @@ const showcases: Record<string, { title: string; text: string; detail: string }[
               <h1>Run a hosting business<br />on your own hardware.</h1>
               <p class="hub-lede">
                 MonoPanel is the storefront, billing system and admin panel for
-                selling Discord bot hosting and VPS hosting. A lightweight
-                daemon on every node runs the customers' servers and VPSes, and
-                everything is stored in PostgreSQL.
+                selling Discord bot hosting, Node.js hosting, website hosting,
+                Lavalink hosting and VPS hosting. Choose which ones you sell. A
+                lightweight daemon on every node runs the customers' servers and
+                VPSes, and everything is stored in PostgreSQL.
               </p>
               <div class="hub-actions">
                 <a href="#install" class="btn-primary">
@@ -184,7 +213,8 @@ const showcases: Record<string, { title: string; text: string; detail: string }[
              │  HMAC-signed HTTP
              ▼
          daemon (one per node)
-          ├─ servers  Docker · Podman · sandbox
+          ├─ servers  bots · Node.js · Lavalink
+          ├─ websites reverse proxy · HTTPS
           ├─ VPSes    Docker
           ├─ SFTP     optional
           └─ backups  node switching</code></pre>
@@ -225,7 +255,7 @@ const showcases: Record<string, { title: string; text: string; detail: string }[
           <button class="about-card" type="button" data-about="daemon" role="tab" aria-selected="false" aria-controls="showcase-daemon" id="tab-daemon">
             <div class="about-card-icon"><iconify-icon icon="lucide:cpu" width="20" height="20"></iconify-icon></div>
             <h3>Daemon</h3>
-            <p>Runs servers and VPSes on every node.</p>
+            <p>Runs every hosting type on every node.</p>
           </button>
           <button class="about-card" type="button" data-about="platform" role="tab" aria-selected="false" aria-controls="showcase-platform" id="tab-platform">
             <div class="about-card-icon"><iconify-icon icon="lucide:shield-check" width="20" height="20"></iconify-icon></div>
@@ -307,8 +337,8 @@ const showcases: Record<string, { title: string; text: string; detail: string }[
               {
                 name: "MonoPanel Daemon",
                 href: links.githubDaemon,
-                body: "One agent per node with no npm runtime dependencies beyond the PostgreSQL driver. Runs servers and VPSes, SFTP, backups and node transfers, and answers only to signed requests.",
-                tags: ["Node.js 20+", "Docker", "SFTP", "HMAC-SHA256"],
+                body: "One agent per node with no npm runtime dependencies beyond the PostgreSQL driver. Runs bots, Node.js, websites, Lavalink and VPSes, SFTP, backups and node transfers, and answers only to signed requests.",
+                tags: ["Node.js 20+", "Docker", "Website proxy", "SFTP", "HMAC-SHA256"],
               },
             ].map((p) => {
               const Tag = p.href ? "a" : "div";

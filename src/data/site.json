@@ -1,11 +1,11 @@
 {
   "title": "MonoPanel",
-  "description": "Hosting platform for Discord bot hosting and VPS hosting. One panel for the storefront, billing and admin, plus a lightweight daemon on every node.",
+  "description": "Hosting platform for Discord bots, Node.js apps, full-stack websites, Lavalink nodes and VPSes. One panel for the storefront, billing and admin, plus a lightweight daemon on every node.",
   "version": {
     "name": "Katharos",
-    "number": "2.0.1",
+    "number": "2.0.2",
     "channel": "Stable",
-    "label": "Katharos V2.0.1"
+    "label": "Katharos V2.0.2"
   },
   "siteUrl": "",
   "loader": {
@@ -29,7 +29,35 @@
       "icon": "server",
       "title": "Bot & App Hosting",
       "description": "Give every customer an isolated server with its own RAM, CPU, disk and swap limits.",
-      "longDescription": "Customers create servers from the software you offer (Node.js, Python, a static site, Minecraft Paper out of the box). Each server runs in its own container on a node with RAM, CPU, swap, disk and process limits, and can be started, stopped, restarted or killed from the dashboard."
+      "longDescription": "Customers create servers from the software you offer (Node.js, Python, a static site, Minecraft Paper out of the box). Each server runs in its own container on a node with RAM, CPU, swap, disk and process limits, and can be started, stopped, restarted or killed from the dashboard. Bot hosting is one of five hosting types you can sell."
+    },
+    {
+      "id": "kinds",
+      "icon": "shapes",
+      "title": "Hosting Types",
+      "description": "Choose what you sell: bots, VPS, websites, Node.js or Lavalink. Anything off disappears everywhere.",
+      "longDescription": "Under Admin > Hosting Types you tick which of the five hosting types your host provides. Whatever you leave off is removed from the home page, pricing, navigation, checkout, the customer panel, the admin menu and the API, and the server enforces it too. The change is live for every visitor with no rebuild and no restart. Set the starting selection with MONOPANEL_HOSTINGS in .env; once an admin saves a selection, that choice wins."
+    },
+    {
+      "id": "website",
+      "icon": "globe",
+      "title": "Website Hosting",
+      "description": "Full-stack sites with a free subdomain, custom domains, HTTPS and Git deploys.",
+      "longDescription": "Customers deploy a front end and back end together (Next.js, Nuxt, Express, Vite, Flask or a static site) from Git or by upload, with a build step before every start. Each site gets a free subdomain, and customers can add custom domains that the panel verifies with a TXT record or a CNAME. The daemon has a built-in reverse proxy that routes by Host header, supports websockets, serves HTTPS from certbot-style certificates and only serves domains the panel told it about."
+    },
+    {
+      "id": "nodejs",
+      "icon": "hexagon",
+      "title": "Node.js Hosting",
+      "description": "Any Node.js app, API or worker, with Node 20, 22, 24 or 25 and install and build tasks.",
+      "longDescription": "Customers pick their Node.js version (20, 22, 24 or 25), deploy from Git or upload files, and run fixed install, build, pull-latest and clean tasks from the panel. The package manager follows the lockfile (npm, pnpm, yarn or bun). The panel reads package.json to show the framework, scripts and dependencies, and the live console shows the output. Customers can only run those named tasks through this route, never their own commands."
+    },
+    {
+      "id": "lavalink",
+      "icon": "music",
+      "title": "Lavalink Hosting",
+      "description": "Lavalink v4 audio nodes for music bots, with a generated config, plugins and live stats.",
+      "longDescription": "A Lavalink server is ready in about a minute. The panel generates application.yml from a validated settings form (sources, filters, buffers, logging) and keeps the password and port as placeholders, so changing either only needs a restart. Customers add plugins by coordinates, or switch to raw mode and edit the file themselves. The Lavalink tab shows live players, memory and CPU, and gives copy-and-paste connection details for the bot."
     },
     {
       "id": "console",
@@ -49,8 +77,8 @@
       "id": "nodes",
       "icon": "network",
       "title": "Nodes",
-      "description": "One daemon per machine. Add a node in the panel, run one command on it, done.",
-      "longDescription": "Add a node under Admin, then run the command the panel shows on the machine. The panel talks to every daemon over HMAC-signed HTTP. You can test a node, reconcile it, rotate its secret, hide it from new deployments and move servers between nodes."
+      "description": "One daemon per machine, for every hosting type. Add a node in the panel, run one command on it, done.",
+      "longDescription": "Add a node under Admin, then run the command the panel shows on the machine. The panel talks to every daemon over HMAC-signed HTTP. A node can be limited to some hosting types (for example a Lavalink-only node), and website nodes get their own DNS target. You can test a node, reconcile it, rotate its secret, hide it from new deployments and move servers between nodes."
     },
     {
       "id": "vps",
@@ -120,8 +148,9 @@
     "requirements": [
       "Node.js 22.13 or newer for the panel, Node.js 20 or newer for the daemon",
       "PostgreSQL 12 or newer (the panel and every daemon each need their own database)",
-      "A Docker, Podman or bubblewrap setup on nodes that run servers",
+      "A Docker, Podman or bubblewrap setup on nodes that run servers (bots, Node.js, websites, Lavalink)",
       "Docker on nodes that host VPSes",
+      "Ports 80 and 443 on nodes that host websites (or your own front proxy such as Caddy or nginx)",
       "tar and unzip on nodes (backups and archive extraction)"
     ],
     "panelSteps": [
@@ -144,7 +173,8 @@
         "title": "Configure",
         "commands": [
           "cp .env.example .env",
-          "# set DATABASE_URL, APP_URL, ALLOWED_ORIGINS and JWT_SECRET in .env"
+          "# set DATABASE_URL, APP_URL, ALLOWED_ORIGINS and JWT_SECRET in .env",
+          "# optional: MONOPANEL_HOSTINGS=\"bot,vps,website,nodejs,lavalink\" picks what you sell"
         ]
       },
       {
@@ -175,6 +205,8 @@
           "git clone https://github.com/MonoPanelOFFICIAL/MonoPanel-daemon.git /opt/monopanel-daemon",
           "cd /opt/monopanel-daemon && npm install && npm run build",
           "npm run configure -- --panel <panel-url> --key <secret> --port 3002 --allow <panel-ip> --database <postgres-url>",
+          "# optional: --services nodejs,lavalink limits what this node accepts",
+          "# websites: add --web-http 80 --web-https 443 [--cert-dir /etc/letsencrypt/live]",
           "npm start"
         ]
       }

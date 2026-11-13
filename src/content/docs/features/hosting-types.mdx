@@ -1,0 +1,47 @@
+---
+title: "Hosting Types"
+description: "Choose which kinds of hosting you sell. Everything else disappears."
+section: "Features"
+order: 25
+---
+
+MonoPanel can sell five kinds of hosting. You choose which ones you actually run under **Admin → Hosting Types**, so you never advertise or accidentally sell something that is not set up.
+
+| Hosting type | What customers get |
+|---|---|
+| **Bot hosting** | Always-on bot and app processes with a console, files, backups and Git deploys |
+| **VPS hosting** | Root SSH virtual servers on Ubuntu or Debian. See [VPS hosting](/docs/features/vps/) |
+| **Website hosting** | Full-stack sites with a free subdomain, custom domains and Git deploys. See [Website hosting](/docs/features/websites/) |
+| **Node.js hosting** | Node 20, 22, 24 and 25 apps with install and build tasks. See [Node.js hosting](/docs/features/nodejs/) |
+| **Lavalink hosting** | Lavalink v4 nodes with a generated config and plugins. See [Lavalink hosting](/docs/features/lavalink/) |
+
+## What switching a type off does
+
+A type you leave off is removed from the home page, the Pricing page, the navigation, checkout, the customer panel, the admin menu and the API. The website updates for every visitor straight away, with no rebuild and no restart.
+
+The browser is not trusted for this: every public list, catalog and create call checks the selection on the server too. A call for a hidden type is refused with `HOSTING_DISABLED`.
+
+Servers that already exist keep running and keep expiring when you switch their type off. They are hidden from customers, and admins still see them. The page warns you before you hide a type that has servers on it. At least one type must stay on.
+
+## Choosing the starting selection
+
+Set `MONOPANEL_HOSTINGS` in `.env` to a comma-separated list, for example:
+
+```env
+MONOPANEL_HOSTINGS="bot,nodejs,lavalink"
+```
+
+The `.env.example` file starts with all five types on. An install with no `MONOPANEL_HOSTINGS` line keeps selling Bot and VPS only, as earlier versions did. The variable is only the starting selection: once an admin saves a choice on the Hosting Types page, that choice wins.
+
+## Plans, products and software
+
+- **Products** belong to a type through their category (`bot`, `vps`, `website`, `nodejs` or `lavalink`). A product with a custom category is never hidden.
+- **Plans** can be limited to some server types. A plan with no list applies to every type. Customers whose plan does not include a type cannot create servers of it.
+- **Software** (images) has a kind. See [Software & Startup](/docs/features/images/).
+- **Nodes** can be limited to some types. See [Nodes](/docs/features/nodes/).
+
+Starter software, products and plans for Node.js, Website and Lavalink hosting are added once per database. They stay hidden until their type is on, and if you edit or delete them they never come back.
+
+## Website base domain
+
+The Hosting Types page also holds the base domain used for free website subdomains. See [Website hosting](/docs/features/websites/).

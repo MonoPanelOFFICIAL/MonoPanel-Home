@@ -1,0 +1,37 @@
+---
+title: "Node.js Hosting"
+description: "Node.js apps, APIs and workers with install and build tasks."
+section: "Features"
+order: 27
+---
+
+Node.js hosting runs any Node.js app, API or worker. Customers pick their Node.js version (20, 22, 24 or 25, with 22 as the default), deploy from Git or upload their files, and watch the live console. It is a server like any other, so the console, file manager, backups, schedules, team access and SFTP all work. Switch it on under **Admin → Hosting Types**.
+
+## The Node tab
+
+The Node tab reads the project in the server's files and shows:
+
+- The name, version, main file and module type from `package.json`, and its scripts and the number of dependencies.
+- The package manager, taken from the lockfile (`pnpm-lock.yaml`, `yarn.lock`, `bun.lock` or `bun.lockb`, `package-lock.json`), or from the `packageManager` field when there is no lockfile. The default is npm.
+- Whether `node_modules` and a `.env` file exist.
+- The Git remote and branch. Credentials in the remote URL are removed before anything reaches the browser.
+- The framework, detected from the dependencies: Next.js, Nuxt, Remix, SvelteKit, Astro, Vite, Express, Fastify, NestJS, Koa, Hono or discord.js.
+
+## Tasks
+
+Customers run four fixed tasks by name:
+
+| Task | What it does |
+|---|---|
+| **Install packages** | Runs the install with the package manager the lockfile uses. `npm ci` is tried first when there is a `package-lock.json` |
+| **Build** | Installs everything, then runs the `build` script |
+| **Pull latest** | `git pull --ff-only`, then install. Only for servers deployed from Git |
+| **Clean** | Deletes `node_modules` and the `.next`, `.nuxt`, `.cache` and `dist` folders |
+
+The task log streams into the page while it runs. Only one task runs at a time on a server. Install can run while the server is up, but the other tasks need the server stopped because they change files the app is using.
+
+Customers can never send their own command through this route. They choose a task by name, and the daemon runs one reviewed script for it in a throw-away container made from the server's own image (or natively on the process runtime). The console and the Startup tab already cover custom commands, inside the server's own limits.
+
+## Plans
+
+The panel ships three starter plans (Node Starter, Node Plus and Node Pro) that you can edit or replace. See the [daemon's Node.js tools](/docs/daemon/services/) for the routes behind this tab.

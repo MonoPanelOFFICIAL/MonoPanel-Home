@@ -18,12 +18,13 @@ Each piece of software (called an image in the admin panel) describes how to ins
 | Ports | Container ports the server listens on |
 | Variables | Environment variables, with defaults and validation rules, optionally editable by the customer |
 | Install | An image, a shell entry point and an install script, plus files to download |
+| Kind | `bot`, `nodejs`, `website` or `lavalink`. Decides which hosting type the software belongs to |
 | Runtime | `any`, `container` or `process` |
 | Minimum RAM | Smallest allowed limit |
 
 ## Shipped by default
 
-Node.js, Python, Static Website (Python `http.server`) and Minecraft (Paper). The Node.js definition uses the same variables and startup flow as the generic Node.js egg on Pterodactyl panels: Git repo address, branch, auto update, extra packages, main file and arguments. Node.js 20, 22, 24 and 25 images are listed.
+Node.js, Python, Static Website (Python `http.server`) and Minecraft (Paper) for bot hosting. Three more definitions are added once per database for the other hosting types: **Node.js** (kind `nodejs`), **Full-stack Website** (kind `website`) and **Lavalink v4** (kind `lavalink`). They stay hidden from customers until that hosting type is switched on in [Hosting types](/docs/features/hosting-types/), and an admin who edits or deletes them never sees them come back. The Node.js definition uses the same variables and startup flow as the generic Node.js egg on Pterodactyl panels: Git repo address, branch, auto update, extra packages, main file and arguments. Node.js 20, 22, 24 and 25 images are listed.
 
 ## Startup tab
 

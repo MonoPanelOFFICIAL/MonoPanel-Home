@@ -1,6 +1,6 @@
 ---
 title: "Nodes"
-description: "Add machines that run servers and VPSes."
+description: "Add machines that run servers, websites, Lavalink nodes and VPSes."
 section: "Features"
 order: 17
 ---
@@ -22,10 +22,16 @@ Add a node under **Admin → Nodes** for servers, or **Admin → VPS Nodes** for
 | RAM, CPU and disk | Capacity of the node |
 | Over-allocation | Percent above capacity the panel may allocate, `0` is strict |
 | Max servers | `0` is unlimited |
+| Services | Which hosting types this node serves. Empty means all of them. Matches `NODE_SERVICES` on the daemon |
+| Website DNS target | Where customers point their domain (A or CNAME). Empty uses the node's public address. Website nodes need ports 80 and 443 open |
 | Port range | Host ports the panel may allocate |
 | Public | Off hides the node from the create wizard |
 | Maintenance | Takes the node out of new deployments |
 | Premium only | Reserves the node for paid plans |
+
+## Services
+
+A node can be limited to some hosting types, for example a node that only runs Lavalink. The panel only places a server on a node that serves its type. The daemon reports the services it was configured for, and daemons older than 4.1 report nothing and are treated as serving everything. After saving, run the configure command the panel shows: it passes `--services` so the daemon on the machine matches the list. See [Services on a node](/docs/daemon/services/).
 
 ## Operations
 

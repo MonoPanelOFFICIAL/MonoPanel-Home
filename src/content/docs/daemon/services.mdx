@@ -1,0 +1,46 @@
+---
+title: "Services on a Node"
+description: "Limit a node to some hosting types, and the tools each type adds."
+section: "Daemon"
+order: 89
+---
+
+One daemon serves every hosting type. `NODE_SERVICES` limits which types a node accepts, so a node can be a Lavalink-only node or a VPS-only node. The panel's own selection under **Admin → Hosting Types** decides what you sell, and `NODE_SERVICES` makes the node refuse the others too.
+
+## NODE_SERVICES
+
+A comma-separated list of any of these. Empty means all of them, which is also what older installs do.
+
+| Name | Hosting type |
+|---|---|
+| `bot` | Generic bot and app servers |
+| `nodejs` | Dedicated Node.js hosting |
+| `website` | Full-stack websites, with domains and the built-in proxy |
+| `lavalink` | Lavalink audio nodes |
+| `vps` | Customer VPSes (needs Docker) |
+
+```env
+NODE_SERVICES=nodejs,lavalink
+```
+
+You can also set it with `npm run configure -- --services nodejs,lavalink`. An unknown name is rejected when you configure and when the daemon starts, so a typo cannot silently disable a service. The panel's **Admin → Nodes** page has the same list, and the command it shows already includes `--services`.
+
+## What a node refuses
+
+- A new server of a kind the node does not serve is refused with `403`.
+- A server's kind can never change. An update that tries to change it gets `409`.
+- If `vps` is not in the list, VPS hosting stays off on that node.
+- Domains can only be set on `website` servers.
+- Servers created by older panels carry no kind and count as `bot`, so a node without `bot` refuses them.
+
+`GET /v1/services` reports the types the node serves, how many servers of each kind it has and the status of the website proxy. The panel reads this, and it only places a server on a node that serves its type.
+
+## Tools for each type
+
+These routes use the same port, secret and signing as everything else.
+
+**Lavalink servers** get a generated `application.yml` from validated settings, kept next to a `.mono-lavalink.json` file so the panel can show and change them again. Passwords and ports stay placeholders resolved from the environment. Plugin coordinates and repositories are validated, extra YAML cannot redefine the managed blocks, and raw mode lets the customer own the file. The status route asks the running Lavalink for `/v4/info` and `/v4/stats` with the server's own password and lists the plugin jars on disk.
+
+**Node.js, website and bot servers** get a project reader and four fixed tasks (`install`, `build`, `update`, `clean`) that run in a throw-away container from the server's own image. See [Node.js hosting](/docs/features/nodejs/).
+
+The full list of routes is in the [Daemon API Reference](/docs/daemon/api-reference/).

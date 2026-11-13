@@ -13,6 +13,7 @@ All routes require the signed headers described in [Daemon security](/docs/daemo
 |---|---|---|
 | GET | `/v1/ping` | Version, runtime, features |
 | GET | `/v1/system` | CPU, memory, disk and VPS summary |
+| GET | `/v1/services` | Hosting types this node serves, server counts per type and the website proxy status |
 
 ## Server lifecycle
 
@@ -27,8 +28,23 @@ All routes require the signed headers described in [Daemon security](/docs/daemo
 | GET | `/v1/servers/:id/stats` | CPU and memory usage |
 | GET | `/v1/servers/:id/logs` | Log stream (the panel's console source) |
 
+## Hosting type tools
+
+These routes sit on the same port and use the same signing as every other route. A route answers `409` when the server is of another kind, and `404` when the server is not registered on the node.
+
+| Method | Path | For | Purpose |
+|---|---|---|---|
+| GET | `/v1/servers/:id/lavalink/config` | Lavalink | Managed settings, the raw `application.yml` and whether the file is managed |
+| PUT | `/v1/servers/:id/lavalink/config` | Lavalink | Save validated `settings`, or a `raw` file |
+| POST | `/v1/servers/:id/lavalink/reset` | Lavalink | Back to the managed defaults |
+| GET | `/v1/servers/:id/lavalink/status` | Lavalink | Version, sources, plugins, players, memory and CPU from the running Lavalink |
+| GET | `/v1/servers/:id/nodejs/project` | Node.js, Website, Bot | `package.json`, package manager, Git remote and framework |
+| GET | `/v1/servers/:id/nodejs/task` | Node.js, Website, Bot | The last task run and its log |
+| POST | `/v1/servers/:id/nodejs/task` | Node.js, Website, Bot | Run `install`, `build`, `update` or `clean` |
+| GET | `/v1/servers/:id/web` | Website | Domains, port and proxy status |
+
 Files, recycle bin, backups, transfers and addons are in [File system](/docs/daemon/filesystem/) and [Backups & transfers](/docs/daemon/backups/). VPS routes are in [VPS](/docs/daemon/vps/).
 
 ## Errors
 
-Errors are returned as JSON with an HTTP status. Common ones are `401` (bad signature, expired or replayed request), `403` (IP not allowed), `404`, `413` (over a size limit) and `501` (VPS routes without Docker).
+Errors are returned as JSON with an HTTP status. Common ones are `401` (bad signature, expired or replayed request), `403` (IP not allowed), `404`, `413` (over a size limit) `409` (a tool used on the wrong kind of server) and `501` (VPS routes without Docker). A `403` also means this node does not host the requested kind (`NODE_SERVICES`).

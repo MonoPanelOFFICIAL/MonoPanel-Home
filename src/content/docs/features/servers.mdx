@@ -7,6 +7,8 @@ order: 10
 
 A server is an isolated app or bot that runs on a node. Customers create servers from the software you offer, and each server gets its own limits.
 
+Every server has a **kind**: `bot`, `nodejs`, `website` or `lavalink`. The kind comes from the software it was created from, it is stored with the server and it can never change afterwards. Servers made before kinds existed count as `bot`. Each kind adds its own tabs to the server page, see [Website hosting](/docs/features/websites/), [Node.js hosting](/docs/features/nodejs/) and [Lavalink hosting](/docs/features/lavalink/).
+
 ## Limits
 
 Every plan defines per-server limits, and a server keeps a snapshot of the limits it was created with:
@@ -36,8 +38,8 @@ The power controls are **start**, **stop**, **restart** and **kill**. They are a
 
 ## Creating a server
 
-1. The customer picks the software, a node (or the panel picks one) and a plan.
-2. The panel checks plan limits, free node capacity and free ports in the node's port range.
+1. The customer picks the software, a node (or the panel picks one) and a plan. Only nodes that serve the software's kind are offered, and a plan can be limited to some kinds.
+2. The panel checks that the hosting type is switched on, plan limits, free node capacity and free ports in the node's port range.
 3. The panel registers the server on the daemon and starts the install.
 4. When the install finishes, the server is offline and ready to start.
 

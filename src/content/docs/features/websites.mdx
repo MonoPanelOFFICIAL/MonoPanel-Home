@@ -1,0 +1,54 @@
+---
+title: "Website Hosting"
+description: "Full-stack sites with a free subdomain, custom domains and Git deploys."
+section: "Features"
+order: 26
+---
+
+Website hosting runs a customer's front end and back end together in one server, built and served by one process. Next.js, Nuxt, Express, Vite, Flask and plain static sites all work, as long as the app listens on the `PORT` it is given.
+
+Switch it on under **Admin → Hosting Types** (see [Hosting types](/docs/features/hosting-types/)). Websites run on nodes whose daemon serves the `website` type and has its [website proxy](/docs/daemon/website-proxy/) running, or sits behind your own front proxy.
+
+## Software
+
+The **Full-stack Website** software ships with Node.js 20, 22 and 24 images and a minimum of 256 MB of RAM. Customers can edit these variables on the Startup tab:
+
+| Variable | Meaning |
+|---|---|
+| Git repo address, branch | A public or private `https` repository to clone |
+| Git username, access token | Only for private repositories |
+| Auto update | Pull the latest code on every start |
+| Build command | Runs before every start. Default `npm run build --if-present` |
+| Start command | Must listen on `PORT`. Default `npm start` |
+| User uploaded files | `1` means the customer uploads files and git is skipped |
+
+A new site with no files gets a small placeholder page so the first start works.
+
+## Free subdomain
+
+Every site gets a free subdomain in the form `<name>-<id>.<base domain>`. Set the base domain on the **Hosting Types** page. With no base domain set, sites get no free subdomain. Domains under your own base domain cannot be added as custom domains.
+
+## Custom domains
+
+A customer adds a domain on the server's **Site** tab, creates the DNS records the panel shows and presses **Verify**. A site can have up to 12 domains, and a domain can only be connected to one site.
+
+The customer proves they own the domain with one of:
+
+- A TXT record `_monopanel.<domain>` with the value `monopanel-site=<token>`. This works for apex domains. The token is derived from the server and the domain with the panel's secret, so it cannot be guessed or reused for another site.
+- A CNAME from the domain to the site's free subdomain, which only the domain owner can create.
+
+The domain must also point at the node with an A, AAAA or CNAME record. The target is the node's **Website DNS target**, or its public address when that is empty. Until it does, the Site tab lists the DNS records that are still missing. Use an A record at the root of the domain if your DNS provider does not allow a CNAME there.
+
+When a domain passes verification the panel pushes it to the node, and the node starts routing it. Adding and checking domains is rate limited, because DNS changes can take a few minutes.
+
+## HTTPS
+
+The daemon's proxy serves HTTPS from certificates you place on the node, picked by the domain the visitor asked for. See [Website proxy](/docs/daemon/website-proxy/) for the certificate layout, the certbot webroot folder and the HTTP to HTTPS redirect.
+
+## Tools
+
+Website servers have the same **Node** tab as [Node.js hosting](/docs/features/nodejs/): project information and the install, build, pull-latest and clean tasks.
+
+## Plans
+
+The panel ships three starter plans (Site Starter, Site Business and Site Pro) that you can edit or replace. Website plans use the same RAM, CPU, disk, backup and database limits as other servers.

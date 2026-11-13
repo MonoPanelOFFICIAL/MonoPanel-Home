@@ -1,0 +1,119 @@
+---
+title: "Update 1: Katharos 2.0.2"
+date: 2026-11-13
+author: MonoPanel
+pinned: true
+---
+
+**Update 1** is out: MonoPanel **Katharos V2.0.2**, with daemon **4.1**. It is the biggest change since V2.0.1. MonoPanel used to sell two things, bot hosting and VPS hosting. It can now sell **five kinds of hosting**, and you choose which ones. This post lists everything that changed.
+
+## At a glance
+
+- Five hosting types: **Bot, VPS, Website, Node.js and Lavalink**.
+- A new **Hosting Types** page in the admin panel. Whatever you switch off disappears from the whole site.
+- **Website hosting** with free subdomains, custom domains and a built-in reverse proxy on the daemon.
+- **Node.js hosting** with install, build, pull-latest and clean tasks.
+- **Lavalink hosting** with a generated config, a plugin manager and live player stats.
+- **One daemon for every type**, with a per-node `NODE_SERVICES` list.
+- The public website, customer panel and admin panel all follow your selection.
+
+## Choose what you sell
+
+Open **Admin → Hosting Types** and tick the kinds of hosting you actually run. Anything you leave off is removed from the home page, Pricing, the navigation, the footer, search, checkout, the customer panel, the admin menu and the API. The change is live for every visitor with no rebuild and no restart.
+
+The server enforces it too, not just the browser. A call for a hidden type is refused, so nobody can order something you do not run. Servers that already exist keep running and keep expiring when you hide their type. Customers stop seeing them, admins still do, and the page warns you before you hide a type that has servers on it.
+
+To set the starting selection without the admin page, put `MONOPANEL_HOSTINGS="bot,nodejs,lavalink"` in `.env`. Once an admin saves a selection, that choice wins. The new `.env.example` starts with all five on. An install with no `MONOPANEL_HOSTINGS` line keeps selling Bot and VPS only, exactly like before.
+
+Read more in [Hosting types](/docs/features/hosting-types/).
+
+## Website hosting
+
+Customers deploy a front end and back end together. Next.js, Nuxt, Express, Vite, Flask and plain static sites all work, from Git or by upload, with a build command that runs before every start.
+
+- **Free subdomain** for every site, in the form `<name>-<id>.<your base domain>`. You set the base domain on the Hosting Types page.
+- **Custom domains**, up to 12 per site. The customer adds a domain on the new **Site** tab, creates the DNS records the panel shows and presses Verify. Ownership is proven with a TXT record or a CNAME to the site's subdomain, and the tab lists any record that is still missing.
+- A domain can only be connected to one site, and domains under your own base domain cannot be claimed.
+- A **Website DNS target** on each node tells customers where to point their domain.
+- Three starter plans (Site Starter, Site Business and Site Pro) and a **Full-stack Website** software with Node.js 20, 22 and 24 images.
+
+Read more in [Website hosting](/docs/features/websites/).
+
+## The daemon's website proxy
+
+Website servers get a built-in reverse proxy with no extra dependencies. It routes by `Host` header, supports websockets and serves only the domains the panel told it about.
+
+- **HTTPS** from certbot-style certificates picked by the domain the visitor asked for. A `_wildcard.<domain>` folder serves every subdomain of a parent domain.
+- A webroot folder for **certbot challenges**, and an optional redirect from HTTP to HTTPS.
+- A **trusted proxy list** for Cloudflare or nginx in front. Forwarded headers a visitor made up are never believed.
+- Clear pages for an unknown domain (`404`) and a stopped site (`503`).
+- It is **off by default**. Turn it on with `WEB_HTTP_PORT` and `WEB_HTTPS_PORT`, or keep Caddy, nginx or a Cloudflare Tunnel and point them at each site's port.
+
+Read more in [Website proxy](/docs/daemon/website-proxy/).
+
+## Node.js hosting
+
+A dedicated product for Node.js apps, APIs and workers. Customers pick Node 20, 22, 24 or 25, deploy from Git or upload, and watch the live console.
+
+The new **Node** tab reads the project and shows the package manager, framework, scripts, dependency counts and Git remote (with any credentials removed). It runs four fixed tasks:
+
+- **Install packages**, using npm, pnpm, yarn or bun depending on the lockfile.
+- **Build**, which installs everything and runs the `build` script.
+- **Pull latest**, a `git pull` followed by an install.
+- **Clean**, which removes `node_modules` and the build folders.
+
+Tasks run in a throw-away container from the server's own image. Customers choose a task by name and can never send their own command through it. The same tab appears on website servers. Three starter plans ship with it (Node Starter, Plus and Pro).
+
+Read more in [Node.js hosting](/docs/features/nodejs/).
+
+## Lavalink hosting
+
+A ready-to-use **Lavalink v4** audio node for Discord music bots, up in about a minute, with a random password generated for each server.
+
+- **Connection details** with copy buttons: host, port, password, version and URL.
+- **Live status** read from Lavalink itself: version, sources, plugins, players, players playing, uptime, memory and CPU load.
+- **A settings form** that writes `application.yml` for you: sources, filters, buffer and Opus options, resampling quality, metrics and log level.
+- **A plugin manager.** Add plugins by `group:artifact:version`, with an optional repository, and put their settings in an extra YAML box.
+- **Raw mode** to edit `application.yml` yourself, and a **reset** back to the managed defaults.
+- The password and port stay placeholders in the file, so changing the password only needs a restart.
+- Three starter plans (Lavalink Starter, Standard and Pro).
+
+Read more in [Lavalink hosting](/docs/features/lavalink/).
+
+## One daemon, every hosting type
+
+Daemon 4.1 serves bots, Node.js, websites, Lavalink and VPSes on one port with one secret.
+
+- **`NODE_SERVICES`** limits what a node accepts. A node can be Lavalink-only, website-only or anything else. An unknown name is rejected, so a typo cannot silently turn a service off.
+- **`npm run configure`** has new flags: `--services`, `--web-http`, `--web-https` and `--cert-dir`.
+- **`GET /v1/services`** reports what a node serves, how many servers of each kind it has and the state of the website proxy.
+- A server's kind is stored when it is created and can never change.
+- The panel only places a server on a node that serves its type.
+- New signed routes for the Lavalink and Node.js tools and for website domains.
+
+Read more in [Services on a node](/docs/daemon/services/).
+
+## Panel and admin changes
+
+- **Nodes** have a **Services** list and a **Website DNS target**. The configure command the panel shows now includes `--services`.
+- **Software** has a **Hosting type**, so you decide which hosting service offers it. Node.js, Full-stack Website and Lavalink software are added for you.
+- **Plans** can be limited to some hosting types. Customers whose plan does not include a type cannot create servers of it.
+- **Products** map to a hosting type through their category, and the editor suggests the category names.
+- **Servers** in the admin list show a badge for their type, and the customer's server list and create wizard work per type.
+- **Public site:** dedicated pages for Website, Node.js and Lavalink hosting that read their plans from your catalogue, a refreshed home page, Pricing, footer, 404 page and global search that follow your selection.
+- The admin menu hides the VPS group when VPS hosting is off.
+- **Starter software, products and plans** are added once per database. If you edit or delete them they never come back.
+
+## Updating from V2.0.1
+
+1. Update the **panel**, then restart it. Nothing changes for your customers until you act: an existing install keeps selling Bot and VPS only until you pick more on the Hosting Types page or set `MONOPANEL_HOSTINGS`.
+2. Update each **daemon** by copying or pulling the new files and running the same `configure` command again. It keeps your existing `.env` and only changes what you pass. Database changes are additive and are applied on start, so running servers are not touched. Daemons older than 4.1 keep working: they report no services and are treated as serving everything.
+3. Existing servers count as bot servers.
+4. For website hosting, set the base domain on the Hosting Types page, open ports 80 and 443 on website nodes (or use your own front proxy), and give each node a Website DNS target.
+
+## Where to read more
+
+- [About MonoPanel](/docs/about/) for the full list of what you can sell.
+- [Hosting types](/docs/features/hosting-types/) to choose your selection.
+- [Daemon overview](/docs/daemon/overview/) for the new configuration options.
+- [Admin getting started](/docs/admin/getting-started/) for a first install.
